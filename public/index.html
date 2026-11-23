@@ -5,164 +5,194 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>แผนการตรวจนับสต็อก Zone A–L</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="/vendor/xlsx.full.min.js"></script>
 <style>
 :root{
-  --bg:#f4f5f2; --panel:#ffffff; --ink:#1c2321; --muted:#66706c; --line:#e1e4de; --soft:#eef0eb;
-  --accent:#0f5c4d; --accent-soft:#dcebe6;
-  --done:#1f8a4c; --done-bg:#e2f3e8;
-  --plan:#2a5bd7; --plan-bg:#e4ebfb;
-  --partial:#b7791f; --partial-bg:#fbf0dc;
-  --late:#c2410c; --late-bg:#fde7dc;
-  --none:#8a918d; --none-bg:#f0f1ee;
-  --radius:10px;
+  --bg:#f4f6fb; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e5e8f0; --soft:#eef1f7;
+  --accent:#4f46e5; --accent2:#7c3aed; --accent-soft:#eef0ff;
+  --grad:linear-gradient(135deg,#4f46e5 0%,#7c3aed 55%,#c026d3 100%);
+  --done:#059669; --done-bg:#d1fae5; --done-bd:#a7f3d0;
+  --plan:#0284c7; --plan-bg:#e0f2fe; --plan-bd:#bae6fd;
+  --partial:#d97706; --partial-bg:#fef3c7; --partial-bd:#fde68a;
+  --late:#e11d48; --late-bg:#ffe4e6; --late-bd:#fecdd3;
+  --none:#64748b; --none-bg:#f1f5f9; --none-bd:#e2e8f0;
+  --off:#94a3b8;
+  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.05),0 6px 18px rgba(15,23,42,.05);
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px;line-height:1.5}
+h1,h2,h3,.kpi b,.zone .zl,table.hm td b{font-family:"Prompt","IBM Plex Sans Thai",sans-serif}
 .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.02em}
 button,input,select,textarea{font:inherit;color:inherit}
-header.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:0 20px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-header.top h1{font-size:16px;margin:0;padding:14px 0;font-weight:600;white-space:nowrap}
-header.top h1 small{font-weight:400;color:#9fb3ac;margin-left:8px}
-nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
-nav.tabs a{color:#c9d3cf;text-decoration:none;padding:15px 14px;border-bottom:3px solid transparent;font-weight:500}
-nav.tabs a.on{color:#fff;border-bottom-color:#5fd0a8}
-.syncnote{margin-left:auto;font-size:12px;color:#9fb3ac;display:flex;align-items:center;gap:6px}
-.syncnote i{width:8px;height:8px;border-radius:50%;background:#9fb3ac;display:inline-block}
-.syncnote.ok i{background:#5fd0a8}.syncnote.warn i{background:#f0b44c}
-main{max-width:1400px;margin:0 auto;padding:20px}
+header.top{position:sticky;top:0;z-index:20;background:var(--grad);color:#fff;padding:0 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;box-shadow:0 4px 20px rgba(79,70,229,.25)}
+header.top h1{font-size:17px;margin:0;padding:13px 0;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:8px}
+header.top h1 .logo{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:16px}
+header.top h1 small{font-weight:400;color:rgba(255,255,255,.75);margin-left:4px;font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:13px}
+@media (min-width:1100px){header.top{flex-wrap:nowrap}}
+nav.tabs{overflow-x:auto;scrollbar-width:none}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 0}
+nav.tabs a{white-space:nowrap;color:rgba(255,255,255,.85);text-decoration:none;padding:7px 13px;border-radius:999px;font-weight:500;transition:background .15s}
+nav.tabs a:hover{background:rgba(255,255,255,.14)}
+nav.tabs a.on{color:var(--accent);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.syncnote{margin-left:auto;font-size:12px;white-space:nowrap;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:6px}
+.syncnote i{width:8px;height:8px;border-radius:50%;background:#cbd5e1;display:inline-block}
+.syncnote.ok i{background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.25)}.syncnote.warn i{background:#fbbf24}
+main{max-width:1400px;margin:0 auto;padding:22px 20px 40px}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .spacer{flex:1}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
-h2{font-size:18px;margin:0 0 4px}
-h3{font-size:15px;margin:0 0 10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+h2{font-size:20px;margin:0 0 4px;font-weight:600}
+h3{font-size:15px;margin:0 0 10px;font-weight:600}
 .sub{color:var(--muted);font-size:13px}
-.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500}
-.btn:hover{border-color:#b9c0ba}
-.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn.pri:hover{background:#0b4a3e}
-.btn.danger{color:#b42318}
-.btn.sm{padding:4px 10px;font-size:13px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:500;transition:all .15s}
+.btn:hover{border-color:#c7cde0;box-shadow:0 2px 6px rgba(15,23,42,.06)}
+.btn.pri{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(99,102,241,.3)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--late)}
+.btn.sm{padding:4px 10px;font-size:13px;border-radius:8px}
 .btn:disabled{opacity:.5;cursor:default}
-input[type=text],input[type=date],input[type=number],select,textarea{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff;min-height:34px}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:#fff;min-height:36px;outline:none;transition:border .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:#a5b4fc;box-shadow:0 0 0 3px rgba(99,102,241,.15)}
 textarea{width:100%;min-height:60px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 label.f > *{color:var(--ink)}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
-.kpi b{display:block;font-size:26px;font-weight:600;line-height:1.2}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:16px 0}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#cbd5e1}
+.kpi b{display:block;font-size:28px;font-weight:600;line-height:1.2}
 .kpi span{color:var(--muted);font-size:13px}
+.kpi.done::before{background:var(--done)}.kpi.plan::before{background:var(--plan)}.kpi.late::before{background:var(--late)}.kpi.partial::before{background:var(--partial)}.kpi.acc::before{background:var(--grad)}
 .kpi.done b{color:var(--done)}.kpi.plan b{color:var(--plan)}.kpi.late b{color:var(--late)}.kpi.partial b{color:var(--partial)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
-.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
-.zone{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px}
+.zone{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);border-top:4px solid var(--zc,#6366f1)}
 .zone .zh{display:flex;align-items:center;gap:10px}
-.zone .zl{width:34px;height:34px;border-radius:8px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px;flex:none}
-.zone .zl.other{font-size:11px;background:#56605c}
+.zone .zl{width:38px;height:38px;border-radius:11px;background:var(--zc,#6366f1);color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px;flex:none;box-shadow:0 4px 10px color-mix(in srgb,var(--zc,#6366f1) 35%,transparent)}
+.zone .zl.other{font-size:12px}
 .zone .zt{flex:1;min-width:0}
-.zone .zt b{font-size:14px}
-.bar{height:7px;background:var(--soft);border-radius:4px;overflow:hidden;display:flex}
+.zone .zt b{font-size:14.5px}
+.bar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;display:flex}
 .bar > span{height:100%}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid transparent;border-radius:7px;padding:4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;min-width:66px;font-size:12px;line-height:1.25;background:var(--none-bg);color:#4b524f}
+.chip{border:1px solid var(--none-bd);border-radius:10px;padding:4px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;min-width:68px;font-size:12px;line-height:1.25;background:var(--none-bg);color:#475569;transition:transform .1s}
+.chip:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,23,42,.08)}
 .chip .c{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:13px}
 .chip small{opacity:.85}
-.chip.done{background:var(--done-bg);color:var(--done);border-color:#bfe3cc}
-.chip.planned{background:var(--plan-bg);color:var(--plan);border-color:#c6d4f6}
-.chip.partial{background:var(--partial-bg);color:var(--partial);border-color:#f1d9ad}
-.chip.late{background:var(--late-bg);color:var(--late);border-color:#f6c8b2}
-.chip:hover{filter:brightness(.96)}
-.st{display:inline-block;border-radius:20px;padding:1px 9px;font-size:12px;font-weight:500;white-space:nowrap}
-.st.done{background:var(--done-bg);color:var(--done)}.st.planned{background:var(--plan-bg);color:var(--plan)}
-.st.partial,.st.inprogress{background:var(--partial-bg);color:var(--partial)}.st.late{background:var(--late-bg);color:var(--late)}
+.chip.done{background:var(--done-bg);color:var(--done);border-color:var(--done-bd)}
+.chip.planned{background:var(--plan-bg);color:var(--plan);border-color:var(--plan-bd)}
+.chip.partial{background:var(--partial-bg);color:var(--partial);border-color:var(--partial-bd)}
+.chip.late{background:var(--late-bg);color:var(--late);border-color:var(--late-bd)}
+.chip.off{background:repeating-linear-gradient(135deg,#f8fafc,#f8fafc 5px,#eef2f7 5px,#eef2f7 10px);color:var(--off);border:1px dashed #cbd5e1}
+.chip.off .c{text-decoration:line-through}
+.st{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12px;font-weight:500;white-space:nowrap}
+.st.done,.st.active{background:var(--done-bg);color:var(--done)}.st.planned{background:var(--plan-bg);color:var(--plan)}
+.st.partial,.st.inprogress,.st.paused{background:var(--partial-bg);color:var(--partial)}.st.late{background:var(--late-bg);color:var(--late)}
 .st.none,.st.cancelled{background:var(--none-bg);color:var(--none)}
+.st.retired,.st.off{background:#e2e8f0;color:#475569}
 table.t{width:100%;border-collapse:collapse;font-size:13px}
-table.t th{text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);padding:7px 8px;white-space:nowrap;background:#fafbf9;position:sticky;top:0}
-table.t td{border-bottom:1px solid var(--soft);padding:6px 8px;vertical-align:top}
-table.t tr:hover td{background:#fafbf9}
+table.t th{text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);padding:8px 10px;white-space:nowrap;background:#f8fafc;position:sticky;top:0;z-index:1}
+table.t td{border-bottom:1px solid var(--soft);padding:7px 10px;vertical-align:top}
+table.t tr:hover td{background:#f8faff}
 table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
-.tw{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:8px}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line);background:#fff;border-radius:8px;overflow:hidden}
-.cal .dh{padding:6px;font-size:12px;color:var(--muted);text-align:center;background:#fafbf9;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
-.cal .d{min-height:104px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 5px;display:flex;flex-direction:column;gap:3px;cursor:pointer}
-.cal .d.out{background:#fafaf8;color:#b4b9b5}
-.cal .d.we{background:#fbfbf9}
+table.t tr.dim td{color:var(--off)}
+.tw{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line);background:#fff;border-radius:12px;overflow:hidden}
+.cal .dh{padding:7px;font-size:12px;color:var(--muted);text-align:center;background:#f8fafc;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-weight:500}
+.cal .d{min-height:106px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .1s}
+.cal .d:hover{background:#f8faff}
+.cal .d.out{background:#fbfcfe;color:#c0c7d4}
+.cal .d.we{background:#fafbfd}
 .cal .d.today{box-shadow:inset 0 0 0 2px var(--accent)}
 .cal .d .dn{font-size:12px;font-weight:600;display:flex;justify-content:space-between}
 .cal .d .dn em{font-style:normal;font-weight:400;color:var(--muted);font-size:11px}
-.cal .pc{font-size:11.5px;border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .pc{font-size:11.5px;border-radius:6px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cal .pc.planned{background:var(--plan-bg);color:var(--plan)}
 .cal .pc.inprogress{background:var(--partial-bg);color:var(--partial)}
 .cal .pc.done{background:var(--done-bg);color:var(--done)}
 .cal .pc.late{background:var(--late-bg);color:var(--late)}
 .cal .pc.cancelled{background:var(--none-bg);color:var(--none);text-decoration:line-through}
-.cal .pc.actual{background:transparent;color:var(--muted);border:1px dashed #c9cec9}
-.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:14px}
+.cal .pc.actual{background:transparent;color:var(--muted);border:1px dashed #cbd5e1}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:16px}
 @media (max-width:980px){.grid2{grid-template-columns:1fr}}
-.drawer-bg,.modal-bg{position:fixed;inset:0;background:rgba(20,26,24,.35);z-index:40;display:none}
+.drawer-bg,.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.4);backdrop-filter:blur(2px);z-index:40;display:none}
 .drawer-bg.on,.modal-bg.on{display:block}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:#fff;z-index:41;transform:translateX(100%);transition:transform .2s;overflow:auto;padding:20px;box-shadow:-8px 0 30px rgba(0,0,0,.1)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(580px,100%);background:#fff;z-index:41;transform:translateX(100%);transition:transform .22s;overflow:auto;padding:22px;box-shadow:-10px 0 40px rgba(15,23,42,.15)}
 .drawer.on{transform:none}
-.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;z-index:42;width:min(760px,96vw);max-height:92vh;overflow:auto;padding:20px;display:none;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:18px;z-index:42;width:min(760px,96vw);max-height:92vh;overflow:auto;padding:22px;display:none;box-shadow:0 24px 70px rgba(15,23,42,.25)}
 .modal.on{display:block}
 .x{border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
-.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:10px 0}
-.picklist{border:1px solid var(--line);border-radius:8px;max-height:280px;overflow:auto}
-.picklist label{display:flex;gap:10px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--soft);cursor:pointer}
-.picklist label:hover{background:#fafbf9}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:12px 0}
+.picklist{border:1px solid var(--line);border-radius:12px;max-height:280px;overflow:auto}
+.picklist label{display:flex;gap:10px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--soft);cursor:pointer}
+.picklist label:hover{background:#f8faff}
 .picklist .c{font-family:"IBM Plex Mono",monospace;width:56px}
-.drop{border:2px dashed #c3cac4;border-radius:12px;padding:30px;text-align:center;background:#fafbf9;cursor:pointer}
-.drop.over{border-color:var(--accent);background:var(--accent-soft)}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;z-index:60;display:none;max-width:90vw}
+.drop{border:2px dashed #c7d2fe;border-radius:16px;padding:32px;text-align:center;background:linear-gradient(180deg,#f8f9ff,#f3f4ff);cursor:pointer;transition:all .15s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;z-index:60;display:none;max-width:90vw;box-shadow:0 10px 30px rgba(15,23,42,.3)}
 .toast.on{display:block}
-.banner{background:#fff6e5;border:1px solid #f1d9ad;color:#7a4f0c;padding:8px 12px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.banner{background:#fffbeb;border:1px solid var(--partial-bd);color:#92400e;padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:13px}
+.banner.info{background:var(--accent-soft);border-color:#c7d2fe;color:#3730a3}
 .empty{color:var(--muted);text-align:center;padding:30px}
-.statline{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 14px}
+.statline{display:flex;gap:20px;flex-wrap:wrap;margin:8px 0 14px}
 .statline div{font-size:13px;color:var(--muted)}
-.statline b{display:block;color:var(--ink);font-size:17px}
+.statline b{display:block;color:var(--ink);font-size:18px;font-family:"Prompt",sans-serif;font-weight:600}
 .hide{display:none!important}
-.qtop{display:grid;grid-template-columns:260px minmax(0,1fr);gap:14px;margin-top:14px}
+.qtop{display:grid;grid-template-columns:270px minmax(0,1fr);gap:16px;margin-top:16px}
 @media (max-width:860px){.qtop{grid-template-columns:1fr}}
 .ring{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
 .zbars{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px 22px}
-.zbar{display:grid;grid-template-columns:92px 1fr 52px;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:3px 4px;border-radius:6px}
-.zbar:hover{background:#f6f7f4}
-.zbar .bar{height:12px;border-radius:6px}
+.zbar{display:grid;grid-template-columns:96px 1fr 52px;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 6px;border-radius:8px}
+.zbar:hover{background:#f5f7ff}
+.zbar .zn{display:flex;align-items:center;gap:6px}
+.zbar .zn i{width:10px;height:10px;border-radius:3px;background:var(--zc)}
+.zbar .bar{height:12px}
 .zbar b.p{text-align:right;font-variant-numeric:tabular-nums}
-table.hm{width:100%;border-collapse:separate;border-spacing:4px;font-size:13px}
+table.hm{width:100%;border-collapse:separate;border-spacing:5px;font-size:13px}
 table.hm th{color:var(--muted);font-weight:500;text-align:center;padding:4px}
 table.hm th.zn{text-align:left}
-table.hm td{border-radius:8px;text-align:center;padding:8px 6px;cursor:pointer;min-width:90px}
+table.hm td{border-radius:10px;text-align:center;padding:9px 6px;cursor:pointer;min-width:90px;transition:transform .1s}
+table.hm td:not(.zn):hover{transform:scale(1.03)}
 table.hm td.zn{text-align:left;cursor:default;font-weight:600;background:none;padding-left:2px;white-space:nowrap}
+table.hm td.zn i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--zc);margin-right:6px}
 table.hm td b{display:block;font-size:17px;line-height:1.2;font-variant-numeric:tabular-nums}
-table.hm td small{font-size:11.5px;opacity:.85}
-table.hm td.sel{box-shadow:0 0 0 2px var(--ink)}
-table.hm tr.tot td{border-top:2px solid var(--line)}
-table.hm td.fut{background:repeating-linear-gradient(45deg,#f6f7f4,#f6f7f4 6px,#eef0eb 6px,#eef0eb 12px);color:var(--muted)}
+table.hm td small{font-size:11.5px;opacity:.9}
+table.hm td.sel{box-shadow:0 0 0 2.5px var(--accent)}
+table.hm td.fut{background:repeating-linear-gradient(45deg,#f8fafc,#f8fafc 6px,#eef2f7 6px,#eef2f7 12px);color:var(--muted)}
 .mx td.q{text-align:center;white-space:nowrap;font-size:12.5px}
-.mx td.q span{display:inline-block;border-radius:5px;padding:1px 7px}
-.mx .y{background:var(--done-bg);color:var(--done)} .mx .pl{background:var(--plan-bg);color:var(--plan)} .mx .pa{background:var(--partial-bg);color:var(--partial)} .mx .no{color:#b9beba}
-.mx tr.zh td{background:#fafbf9;font-weight:600}
+.mx td.q span{display:inline-block;border-radius:6px;padding:1px 8px}
+.mx .y{background:var(--done-bg);color:var(--done)} .mx .pl{background:var(--plan-bg);color:var(--plan)} .mx .pa{background:var(--partial-bg);color:var(--partial)} .mx .no{color:#cbd5e1} .mx .of{background:#e2e8f0;color:#64748b}
+.mx tr.zh td{background:#f8fafc;font-weight:600}
 a{color:var(--accent)}
 a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accent)}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{border:none;background:#fff;padding:6px 12px;cursor:pointer}
-.seg button.on{background:var(--ink);color:#fff}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.seg button{border:none;background:transparent;padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--grad);color:#fff}
+.stbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:6px 0 14px;background:#fafbff}
+.stpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.stpick label{border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.stpick label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.stpick input{display:none}
+.stpick b{font-size:14px}
+.bulkbar{position:sticky;bottom:12px;background:var(--ink);color:#fff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(15,23,42,.3);margin-top:12px}
+.bulkbar .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
+.sugg{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid var(--partial-bd);border-radius:14px;padding:12px 16px;margin:14px 0}
+.sugg .ic{font-size:22px}
 </style>
 </head>
 <body>
 <header class="top">
-  <h1>📦 แผนการตรวจนับสต็อก<small>Plant 1002 · Zone A–L</small></h1>
+  <h1><span class="logo">📦</span>แผนการตรวจนับสต็อก<small>Plant 1002</small></h1>
   <nav class="tabs" id="tabs">
     <a href="#overview" data-v="overview">ภาพรวมโซน</a>
     <a href="#quarter" data-v="quarter">ติดตามรายไตรมาส</a>
     <a href="#plan" data-v="plan">แผน &amp; ปฏิทิน</a>
     <a href="#history" data-v="history">ประวัติการนับ</a>
+    <a href="#slocs" data-v="slocs">จัดการ Sloc</a>
     <a href="#import" data-v="import">นำเข้า MI24 / ตั้งค่า</a>
   </nav>
-  <div class="syncnote" id="sync"><i></i><span>กำลังเชื่อมต่อ…</span><button class="btn sm" id="pinBtn" style="margin-left:8px;background:transparent;color:#c9d3cf;border-color:#46524e" onclick="pinToggle()">🔒 PIN</button></div>
+  <div class="syncnote" id="sync"><i></i><span>กำลังเชื่อมต่อ…</span><button class="btn sm" id="pinBtn" style="margin-left:8px;background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)" onclick="pinToggle()">🔒 PIN</button></div>
 </header>
 
 <main>
@@ -186,10 +216,11 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
         <span><i style="background:var(--partial)"></i>นับยังไม่ครบ</span>
         <span><i style="background:var(--plan)"></i>มีแผนแล้ว</span>
         <span><i style="background:var(--late)"></i>เลยกำหนดแผน</span>
-        <span><i style="background:#c4c9c5"></i>ยังไม่นับ/ไม่มีแผน</span>
+        <span><i style="background:#cbd5e1"></i>ยังไม่นับ/ไม่มีแผน</span>
         <span>· ตัวเลขใต้รหัส = วันนับล่าสุด (กี่วันก่อน)</span>
       </div>
       <div class="spacer"></div>
+      <label class="sub" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ovShowOff"> แสดง Sloc ที่พักใช้/ยกเลิก</label>
       <input type="text" id="ovSearch" placeholder="ค้นหา Sloc…" style="width:150px">
       <button class="btn pri" onclick="openPlanModal()">+ วางแผนนับ</button>
     </div>
@@ -207,7 +238,7 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
     <div class="qtop">
       <div class="panel ring" id="qRing"></div>
       <div class="panel"><div class="row" style="margin-bottom:10px"><h3 style="margin:0" id="qNowTitle"></h3><div class="spacer"></div>
-        <div class="legend"><span><i style="background:var(--done)"></i>นับครบแล้ว</span><span><i style="background:#9db7f0"></i>มีแผนแล้ว</span></div></div>
+        <div class="legend"><span><i style="background:var(--done)"></i>นับครบแล้ว</span><span><i style="background:#7dd3fc"></i>มีแผนแล้ว</span></div></div>
         <div class="zbars" id="qBars"></div></div>
     </div>
     <div class="panel" style="margin-top:14px">
@@ -281,6 +312,31 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
     </div>
   </section>
 
+  <!-- SLOC MANAGEMENT -->
+  <section id="v-slocs" class="hide">
+    <div class="row">
+      <div><h2>จัดการ Sloc</h2><div class="sub">กำหนดสถานะการใช้งาน: ใช้งาน · พักใช้ชั่วคราว · ยกเลิกใช้ — Sloc ที่พักใช้/ยกเลิก จะไม่ถูกนับเป็นเป้าหมายใน % และไม่ถูกจัดเข้าแผน ตั้งแต่วันที่มีผล</div></div>
+    </div>
+    <div class="kpis" id="slKpis"></div>
+    <div id="slSugg"></div>
+    <div class="panel">
+      <div class="row" style="margin-bottom:10px">
+        <select id="slZone"><option value="">ทุกโซน</option></select>
+        <select id="slStatus"><option value="">ทุกสถานะ</option><option value="active">ใช้งาน</option><option value="paused">พักใช้ชั่วคราว</option><option value="retired">ยกเลิกใช้</option><option value="stale">ไม่ได้นับเกิน 180 วัน</option></select>
+        <input type="text" id="slSearch" placeholder="ค้นหารหัส / คำอธิบาย" style="width:200px">
+        <div class="spacer"></div>
+        <input type="text" id="newSloc" placeholder="รหัสใหม่ เช่น EAE0" style="width:150px">
+        <select id="newSlocZone"></select>
+        <input type="text" id="newSlocDesc" placeholder="คำอธิบาย" style="width:160px">
+        <button class="btn sm" onclick="addSloc()">+ เพิ่ม Sloc</button>
+      </div>
+      <div class="tw" style="max-height:640px"><table class="t" id="slocTable"></table></div>
+      <div class="bulkbar hide" id="slBulk"><span id="slBulkN"></span><div class="spacer"></div>
+        <button class="btn sm" onclick="openStatusModal(slSelected())">เปลี่ยนสถานะที่เลือก…</button>
+        <button class="btn sm" onclick="slSel.clear();renderSlocs()">ล้างที่เลือก</button></div>
+    </div>
+  </section>
+
   <!-- IMPORT -->
   <section id="v-import" class="hide">
     <h2>นำเข้าผลนับจาก SAP MI24</h2>
@@ -301,16 +357,7 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
         <label class="f" style="margin-top:10px">เดือนเริ่มต้นปี (สำหรับแบ่งไตรมาส)<select id="cfgFy" style="width:160px"></select></label>
         <label class="f" style="margin-top:10px">รายชื่อผู้นับ (คั่นด้วย ,)<input type="text" id="cfgPeople"></label>
         <div class="row" style="margin-top:10px"><button class="btn pri" onclick="saveConfig()">บันทึกตั้งค่า</button></div>
-        <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
-        <h3>รายชื่อ Sloc &amp; โซน</h3>
-        <div class="sub" style="margin-bottom:8px">โซนกำหนดอัตโนมัติจากตัวอักษรที่ 2 ของรหัส (EAC0 → A) แก้ไขโซน/คำอธิบายได้ที่นี่ หรือเพิ่ม Sloc ที่ยังไม่มีในประวัติ</div>
-        <div class="row" style="margin-bottom:8px">
-          <input type="text" id="newSloc" placeholder="รหัส เช่น EAE0" style="width:120px">
-          <select id="newSlocZone"></select>
-          <input type="text" id="newSlocDesc" placeholder="คำอธิบาย (ไม่บังคับ)" style="flex:1;min-width:120px">
-          <button class="btn sm" onclick="addSloc()">เพิ่ม</button>
-        </div>
-        <div class="tw" style="max-height:360px"><table class="t" id="slocTable"></table></div>
+
       </div>
     </div>
   </section>
@@ -337,6 +384,28 @@ function autoZone(code){
 }
 const zoneName = z => z==="SP" ? "Spare part" : z===OTHER ? "Sloc อื่นๆ" : "Zone "+z;
 const zoneIdx = z => { const i = GROUPS.indexOf(z); return i<0 ? 99 : i; };
+const ZCOL = {A:"#6366f1",B:"#0ea5e9",C:"#14b8a6",D:"#22c55e",E:"#84cc16",F:"#f59e0b",G:"#f97316",H:"#ef4444",I:"#ec4899",J:"#a855f7",K:"#8b5cf6",L:"#06b6d4",R:"#e11d48",S:"#0891b2",M:"#65a30d",P:"#d97706",SP:"#475569"};
+const zoneColor = z => ZCOL[z] || "#64748b";
+/* ---- Sloc status: active / paused / retired, with effective dates & history ---- */
+const SL_ST = {active:"ใช้งาน", paused:"พักใช้ชั่วคราว", retired:"ยกเลิกใช้"};
+const SL_REASONS = ["ย้าย/รวมพื้นที่จัดเก็บ","รวมกับ Sloc อื่น","ไม่มีสต็อกแล้ว","ปิดปรับปรุงพื้นที่","เปลี่ยนรหัส Sloc ใหม่","อื่นๆ"];
+function slocHistory(code){
+  const o = S.slocs[code]; if (!o) return [];
+  const h = Array.isArray(o.history) ? o.history.slice() : [];
+  if (!h.length && o.status && o.status!=="active") h.push({status:o.status, since:o.since||"2000-01-01", until:o.until||"", reason:o.reason||""});
+  return h.sort((a,b)=>(a.since||"").localeCompare(b.since||"") || (a.at||"").localeCompare(b.at||""));
+}
+// สถานะของ Sloc ณ วันที่ date (YYYY-MM-DD)
+function statusOn(code, date){
+  let cur = {status:"active"};
+  for (const e of slocHistory(code)) if ((e.since||"") <= date) cur = e;
+  if (cur.status==="paused" && cur.until && cur.until < date) return {status:"active", ended:cur};
+  return cur;
+}
+const slocNow = code => statusOn(code, todayStr());
+// ต้องนับในช่วงนี้หรือไม่: ใช้สถานะ ณ วันสุดท้ายของช่วง (หรือวันนี้ ถ้าช่วงยังไม่จบ)
+const evalDate = to => (to < todayStr() ? to : todayStr());
+const requiredIn = (code, to) => statusOn(code, evalDate(to)).status === "active";
 const TH_MON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const TH_MON_FULL = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 const TH_DOW = ["อา","จ","อ","พ","พฤ","ศ","ส"];
@@ -389,7 +458,7 @@ const Store = {
       else if (JSON.stringify(S[d.col][d.id]) !== JSON.stringify(d.data)) { S[d.col][d.id] = d.data; changed = true; }
     }
     this.since = Math.max(0, r.now - 5000);
-    setSync("ok", "ข้อมูลกลางของทีม · อัปเดต "+new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}) + (this.pinRequired && !getPin() ? " · ดูอย่างเดียว" : ""));
+    setSync("ok", "อัปเดต "+new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}) + (this.pinRequired && !getPin() ? " · ดูอย่างเดียว" : ""));
     if (changed || r.docs.length===0) scheduleRender();
   },
   loadLocal(){
@@ -490,13 +559,16 @@ function slocInfo(){
     else if (m.plansInP.some(p => planStatus(p)==="late")) st = "late";
     else if (m.plansInP.length) st = "planned";
     else st = "none";
-    m.status = st;
+    m.sl = statusOn(m.code, evalDate(to));
+    m.slNow = slocNow(m.code);
+    m.off = m.sl.status!=="active" && !(inP.length && !m.partialInP);   // พักใช้/ยกเลิก และไม่ได้นับในรอบนี้
+    m.status = m.off ? "off" : st;
   }
   return map;
 }
 
 /* ================= router ================= */
-const VIEWS = ["overview","quarter","plan","history","import"];
+const VIEWS = ["overview","quarter","plan","history","slocs","import"];
 function route(){
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
   for (const x of VIEWS) $("#v-"+x).classList.toggle("hide", x!==v);
@@ -514,6 +586,7 @@ function renderAll(){
   if (v==="quarter") renderQuarter();
   if (v==="history") renderHistory();
   if (v==="import") renderImportSide();
+  if (v==="slocs") renderSlocs();
   if ($("#drawer").classList.contains("on") && $("#drawer").dataset.code) renderDrawer($("#drawer").dataset.code);
 }
 function zoneList(){
@@ -522,7 +595,7 @@ function zoneList(){
 }
 function fillZoneSelects(){
   const zl = zoneList();
-  for (const id of ["#calZone","#hZone","#qZone"]) {
+  for (const id of ["#calZone","#hZone","#qZone","#slZone"]) {
     const el=$(id), v=el.value;
     el.innerHTML = '<option value="">ทุกโซน</option>' + zl.map(z=>`<option value="${esc(z)}">${zoneName(z)}</option>`).join("");
     el.value = v;
@@ -533,7 +606,9 @@ function fillZoneSelects(){
 
 /* ================= overview ================= */
 function renderOverview(){
-  const info = slocInfo(); const list = Object.values(info);
+  const info = slocInfo(); const all = Object.values(info); const list = all.filter(m=>!m.off);
+  const offN = all.length - list.length;
+  const showOff = $("#ovShowOff") && $("#ovShowOff").checked;
   const q = $("#ovSearch").value.trim().toUpperCase();
   const cnt = s => list.filter(m=>m.status===s).length;
   const cyc = Number(S.config.cycleDays)||30;
@@ -541,30 +616,32 @@ function renderOverview(){
   const overdueNoPlan = list.filter(m=>m.overdue && !m.nextPlan && m.status!=="done").length;
   const pct = list.length ? Math.round(cnt("done")/list.length*100) : 0;
   $("#kpis").innerHTML = `
-    <div class="kpi"><b>${list.length}</b><span>Sloc ทั้งหมด</span></div>
+    <div class="kpi acc"><b>${list.length}</b><span>Sloc ที่ต้องนับ${offN?` · <a href="#slocs">ไม่นับ ${offN} (พักใช้/ยกเลิก)</a>`:""}</span></div>
     <div class="kpi done"><b>${cnt("done")} <small style="font-size:14px;color:var(--muted)">(${pct}%)</small></b><span>นับครบแล้วในรอบนี้</span></div>
     <div class="kpi partial"><b>${cnt("partial")}</b><span>นับยังไม่ครบ (Not Yet Counted)</span></div>
     <div class="kpi plan"><b>${cnt("planned")+cnt("late")}</b><span>มีแผนแล้ว${cnt("late")?` · <b style="display:inline;font-size:13px;color:var(--late)">เลยกำหนด ${cnt("late")}</b>`:""}</span></div>
     <div class="kpi late"><b>${overdueNoPlan}</b><span>ไม่ได้นับเกิน ${cyc} วัน &amp; ยังไม่มีแผน</span></div>
     <div class="kpi"><b>${diffTotal}</b><span>รายการที่มีผลต่างในรอบนี้</span></div>`;
   const byZone = {};
+  const offZone = {};
   for (const m of list) (byZone[m.zone] ||= []).push(m);
+  for (const m of all) if (m.off) (offZone[m.zone] ||= []).push(m);
   const order = zoneList();
   $("#zones").innerHTML = order.map(z => {
-    let ms = (byZone[z]||[]);
+    let ms = (byZone[z]||[]).concat(showOff ? (offZone[z]||[]) : []);
     if (q) ms = ms.filter(m => m.code.includes(q) || (m.desc||"").toUpperCase().includes(q));
     if (q && !ms.length) return "";
     const tot = (byZone[z]||[]).length;
     const c = s => (byZone[z]||[]).filter(m=>m.status===s).length;
     const seg = (s,col) => tot ? `<span style="width:${c(s)/tot*100}%;background:${col}"></span>` : "";
     const chips = ms.length ? ms.map(m => {
-      const age = m.age===null ? "ยังไม่เคยนับ" : (m.age===0?"วันนี้":m.age+" วันก่อน");
+      const age = m.off ? SL_ST[m.sl.status] : m.age===null ? "ยังไม่เคยนับ" : (m.age===0?"วันนี้":m.age+" วันก่อน");
       const extra = m.status==="planned"||m.status==="late" ? (m.plansInP[0] ? " · แผน "+fmtD(m.plansInP[0].date) : "") : "";
       return `<div class="chip ${m.status}" onclick="openDrawer('${esc(m.code)}')" title="${esc(m.desc)}"><span class="c">${esc(m.code)}</span><small>${age}${extra}</small></div>`;
     }).join("") : `<span class="sub">ยังไม่มี Sloc — เพิ่มได้ที่หน้า “นำเข้า / ตั้งค่า”</span>`;
-    return `<div class="zone">
+    return `<div class="zone" style="--zc:${zoneColor(z)}">
       <div class="zh"><div class="zl ${z.length>1||z===OTHER?"other":""}">${z===OTHER?"อื่น":z}</div>
-        <div class="zt"><b>${zoneName(z)}</b> <b class="zpct" style="float:right;color:${pctColor(tot?c("done")/tot*100:0)}">${tot?Math.round(c("done")/tot*100)+"%":"–"}</b><div class="sub">${tot} Sloc · นับครบ ${c("done")} · มีแผน ${c("planned")+c("late")} · เหลือ ${c("none")}</div></div>
+        <div class="zt"><b>${zoneName(z)}</b> <b class="zpct" style="float:right;color:${pctColor(tot?c("done")/tot*100:0)}">${tot?Math.round(c("done")/tot*100)+"%":"–"}</b><div class="sub">${tot} Sloc · นับครบ ${c("done")} · มีแผน ${c("planned")+c("late")} · เหลือ ${c("none")}${(offZone[z]||[]).length?` · <span style="color:var(--off)">ไม่นับ ${(offZone[z]||[]).length}</span>`:""}</div></div>
         <button class="btn sm" onclick="openPlanModal({zone:'${esc(z)}'})">+ แผน</button></div>
       <div class="bar">${seg("done","var(--done)")}${seg("partial","var(--partial)")}${seg("planned","var(--plan)")}${seg("late","var(--late)")}</div>
       <div class="chips">${chips}</div></div>`;
@@ -586,12 +663,17 @@ function openDrawer(code){ const d=$("#drawer"); d.dataset.code=code; renderDraw
 function closeDrawer(){ $("#drawer").classList.remove("on"); $("#drawerBg").classList.remove("on"); $("#drawer").dataset.code=""; }
 function renderDrawer(code){
   const m = slocInfo()[code]; if (!m) { closeDrawer(); return; }
-  const stLbl = {done:"นับครบแล้วในรอบ",partial:"นับยังไม่ครบ",planned:"มีแผนแล้ว",late:"เลยกำหนดแผน",none:"ยังไม่นับ/ไม่มีแผน"}[m.status];
+  const stLbl = {done:"นับครบแล้วในรอบ",partial:"นับยังไม่ครบ",planned:"มีแผนแล้ว",late:"เลยกำหนดแผน",none:"ยังไม่นับ/ไม่มีแผน",off:"ไม่ต้องนับ ("+SL_ST[m.sl.status]+")"}[m.status];
   const counters = [...new Set(m.counts.flatMap(c=>c.counters||[]))];
   $("#drawer").innerHTML = `
     <div class="row"><div><div class="sub">${zoneName(m.zone)}</div><h2 class="mono" style="font-size:24px">${esc(code)}</h2>
       <div class="sub">${esc(m.desc)||"–"}</div></div><div class="spacer"></div><button class="x" onclick="closeDrawer()">×</button></div>
     <div style="margin:10px 0"><span class="st ${m.status}">${stLbl}</span></div>
+    <div class="stbox"><div class="row"><div><div class="sub">สถานะการใช้งาน Sloc</div>
+      <span class="st ${m.slNow.status}" style="font-size:13px">${SL_ST[m.slNow.status]}</span>
+      ${m.slNow.status!=="active"?`<span class="sub"> ตั้งแต่ ${fmtD(m.slNow.since)}${m.slNow.until?` ถึง ${fmtD(m.slNow.until)}`:""}${m.slNow.reason?` · ${esc(m.slNow.reason)}`:""}</span>`:""}</div>
+      <div class="spacer"></div><button class="btn sm" onclick="openStatusModal(['${esc(code)}'])">เปลี่ยนสถานะ</button></div>
+      ${slocHistory(code).length?`<div class="sub" style="margin-top:8px">${slocHistory(code).slice().reverse().map(e=>`• ${fmtD(e.since)} → <b>${SL_ST[e.status]}</b>${e.until?` ถึง ${fmtD(e.until)}`:""}${e.reason?` (${esc(e.reason)})`:""}${e.by?` · โดย ${esc(e.by)}`:""}`).join("<br>")}</div>`:""}</div>
     <div class="statline">
       <div>นับล่าสุด<b>${fmtD(m.last)}</b></div>
       <div>ผ่านมา<b>${m.age===null?"–":m.age+" วัน"}</b></div>
@@ -647,10 +729,12 @@ function openPlanModal(pre={}){
   const selected = new Set(pre.slocs||[]);
   const drawList = () => {
     const z = $("#pmZone").value;
-    const ms = Object.values(info).filter(m=>m.zone===z).sort((a,b)=>(a.age??1e9)<(b.age??1e9)?1:-1);
+    const zAll = Object.values(info).filter(m=>m.zone===z);
+    const ms = zAll.filter(m=>m.slNow.status==="active").sort((a,b)=>(a.age??1e9)<(b.age??1e9)?1:-1);
+    const hidden = zAll.length - ms.length;
     $("#pmList").innerHTML = ms.length ? ms.map(m=>`<label><input type="checkbox" value="${esc(m.code)}" ${selected.has(m.code)?"checked":""}><span class="c">${esc(m.code)}</span>
-      <span class="st ${m.status}" style="min-width:74px;text-align:center">${{done:"นับแล้ว",partial:"ไม่ครบ",planned:"มีแผน",late:"เลยกำหนด",none:"ยังไม่นับ"}[m.status]}</span>
-      <span class="sub" style="flex:1">ล่าสุด ${fmtD(m.last)}${m.age!==null?` (${m.age} วัน)`:""} · ~${m.sizeEst} รายการ${m.nextPlan?` · แผนถัดไป ${fmtD(m.nextPlan.date)}`:""}</span></label>`).join("") : `<div class="empty">ไม่มี Sloc ในโซนนี้</div>`;
+      <span class="st ${m.status}" style="min-width:74px;text-align:center">${{done:"นับแล้ว",partial:"ไม่ครบ",planned:"มีแผน",late:"เลยกำหนด",none:"ยังไม่นับ",off:"ไม่นับ"}[m.status]}</span>
+      <span class="sub" style="flex:1">ล่าสุด ${fmtD(m.last)}${m.age!==null?` (${m.age} วัน)`:""} · ~${m.sizeEst} รายการ${m.nextPlan?` · แผนถัดไป ${fmtD(m.nextPlan.date)}`:""}</span></label>`).join("") + (hidden?`<div class="sub" style="padding:8px 12px">ซ่อน ${hidden} Sloc ที่พักใช้/ยกเลิก</div>`:"") : `<div class="empty">ไม่มี Sloc ที่ใช้งานในโซนนี้</div>`;
     $("#pmList").querySelectorAll("input").forEach(i=>i.onchange=()=>{ i.checked?selected.add(i.value):selected.delete(i.value); sum(); });
     sum();
   };
@@ -720,7 +804,7 @@ function openAutoModal(){
     const info = slocInfo(); const cap = Math.max(10, num($("#amCap").value));
     const zs = new Set([...document.querySelectorAll("#amZones input:checked")].map(i=>i.value));
     const cyc = Number(S.config.cycleDays)||30;
-    let pool = Object.values(info).filter(m => zs.has(m.zone) && m.status==="none" && !m.nextPlan && (!$("#amOverdue").checked || m.age===null || m.age>cyc));
+    let pool = Object.values(info).filter(m => zs.has(m.zone) && m.status==="none" && m.slNow.status==="active" && !m.nextPlan && (!$("#amOverdue").checked || m.age===null || m.age>cyc));
     const zi = zoneIdx;
     pool.sort((a,b)=> zi(a.zone)-zi(b.zone) || (b.age??1e9)-(a.age??1e9) || a.code.localeCompare(b.code));
     draft = []; let d = $("#amFrom").value; const end = $("#amTo").value; let load = 0; let left = [];
@@ -942,6 +1026,7 @@ function renderImportPreview(){
       <div>ช่วงวันที่นับ<b>${dates.length?fmtD(dates[0])+" – "+fmtD(dates[dates.length-1]):"–"}</b></div>
       <div>ยังไม่นับ<b>${recs.reduce((s,r)=>s+r.notCounted,0)}</b></div><div>มีผลต่าง<b>${recs.reduce((s,r)=>s+r.diffItems,0)}</b></div></div>
     <div class="sub" style="margin-bottom:8px">${Object.keys(byZ).sort((a,b)=>zoneIdx(a)-zoneIdx(b)).map(z=>`<b>${zoneName(z)}</b>: ${[...byZ[z]].sort().join(", ")}`).join("<br>")}</div>
+    ${(()=>{ const bad=[...new Set(recs.filter(r=>r.lastDate && statusOn(r.sloc,r.lastDate).status!=="active").map(r=>r.sloc))]; return bad.length?`<div class="banner">⚠️ มีผลนับของ Sloc ที่พักใช้/ยกเลิกแล้ว ณ วันที่นับ: <b>${bad.map(esc).join(", ")}</b> — ตรวจสอบว่าถูกต้อง หรือเปิดใช้งานใหม่ที่หน้า “จัดการ Sloc”</div>`:""; })()}
     <div class="row"><span>ใหม่ <b>${isNew}</b> · เปลี่ยนแปลง <b>${changed}</b> · เหมือนเดิม <b>${recs.length-isNew-changed}</b></span><div class="spacer"></div>
       <label><input type="checkbox" id="impClose" checked> ปิดแผนที่ตรงกับผลนับอัตโนมัติ</label>
       <button class="btn pri" id="impGo" ${isNew+changed?"":"disabled"}>นำเข้า ${isNew+changed} รายการ</button></div>`;
@@ -964,18 +1049,94 @@ function renderImportSide(){
     $("#cfgCycle").value = S.config.cycleDays||30; $("#cfgCap").value = S.config.capacity||300; $("#cfgPeople").value = S.config.people||"";
     $("#cfgFy").innerHTML = TH_MON_FULL.map((m,i)=>`<option value="${i+1}">${m}${i===0?" (ปีปฏิทิน)":""}</option>`).join(""); $("#cfgFy").value = String(S.config.fyStart||1);
   }
-  const info = slocInfo();
-  const codes = Object.keys(info).sort((a,b)=>{ const za=zoneOf(a), zb=zoneOf(b); return za===zb? a.localeCompare(b) : zoneIdx(za)-zoneIdx(zb); });
-  $("#slocTable").innerHTML = `<tr><th>Sloc</th><th>โซน</th><th>คำอธิบาย</th><th>นับล่าสุด</th><th></th></tr>` + codes.map(c=>{
-    const o=S.slocs[c]||{};
-    return `<tr><td class="mono">${esc(c)}</td>
-      <td><select data-c="${esc(c)}" class="slZone" style="min-height:28px;padding:2px 6px">${["",...GROUPS,OTHER].map(z=>`<option value="${esc(z)}" ${(o.zone||"")===z?"selected":""}>${z===""?"อัตโนมัติ ("+zoneName(autoZone(c))+")":zoneName(z)}</option>`).join("")}</select></td>
-      <td><input type="text" class="slDesc" data-c="${esc(c)}" value="${esc(o.desc||"")}" style="min-height:28px;padding:2px 8px;width:100%"></td>
-      <td>${fmtD(info[c].last)}</td>
-      <td>${S.slocs[c] && !info[c].counts.length && !info[c].plans.length ? `<button class="btn sm danger" onclick="delSloc('${esc(c)}',this)">ลบ</button>` : ""}</td></tr>`;
-  }).join("");
+}
+/* ================= Sloc management ================= */
+const slSel = new Set();
+const slSelected = () => [...slSel];
+function renderSlocs(){
+  const info = slocInfo(); const today = todayStr();
+  const list = Object.values(info);
+  const cnt = st => list.filter(m=>m.slNow.status===st).length;
+  const stale = list.filter(m=>m.slNow.status==="active" && (m.age===null || m.age>180));
+  $("#slKpis").innerHTML = `
+    <div class="kpi acc"><b>${list.length}</b><span>Sloc ทั้งหมดในระบบ</span></div>
+    <div class="kpi done"><b>${cnt("active")}</b><span>ใช้งาน (ต้องนับ)</span></div>
+    <div class="kpi partial"><b>${cnt("paused")}</b><span>พักใช้ชั่วคราว</span></div>
+    <div class="kpi"><b style="color:#475569">${cnt("retired")}</b><span>ยกเลิกใช้</span></div>`;
+  $("#slSugg").innerHTML = stale.length ? `<div class="sugg"><span class="ic">💡</span><div style="flex:1"><b>มี ${stale.length} Sloc ที่ไม่ได้นับเกิน 180 วัน</b> — อาจเลิกใช้แล้ว ตรวจสอบแล้วเปลี่ยนสถานะได้
+      <div class="sub">${stale.slice(0,14).map(m=>esc(m.code)).join(", ")}${stale.length>14?" …":""}</div></div>
+      <button class="btn sm" onclick="$('#slStatus').value='stale';renderSlocs()">ดูรายการ</button></div>` : "";
+  const zf=$("#slZone").value, sf=$("#slStatus").value, q=$("#slSearch").value.trim().toUpperCase();
+  const rows = list.filter(m => (!zf || m.zone===zf) && (!q || m.code.includes(q) || (m.desc||"").toUpperCase().includes(q))
+      && (!sf || (sf==="stale" ? stale.includes(m) : m.slNow.status===sf)))
+    .sort((a,b)=> zoneIdx(a.zone)-zoneIdx(b.zone) || a.code.localeCompare(b.code));
+  for (const c of [...slSel]) if (!info[c]) slSel.delete(c);
+  const allOn = rows.length && rows.every(m=>slSel.has(m.code));
+  $("#slocTable").innerHTML = `<tr><th><input type="checkbox" id="slAll" ${allOn?"checked":""}></th><th>Sloc</th><th>โซน</th><th>คำอธิบาย</th><th>สถานะ</th><th>มีผล / เหตุผล</th><th>นับล่าสุด</th><th></th></tr>` + (rows.length ? rows.map(m=>{
+    const o=S.slocs[m.code]||{}; const n=m.slNow;
+    return `<tr class="${n.status!=="active"?"dim":""}"><td><input type="checkbox" class="slChk" value="${esc(m.code)}" ${slSel.has(m.code)?"checked":""}></td>
+      <td><a href="#slocs" class="mono" onclick="openDrawer('${esc(m.code)}');return false">${esc(m.code)}</a></td>
+      <td><select data-c="${esc(m.code)}" class="slZone" style="min-height:30px;padding:2px 6px">${["",...GROUPS,OTHER].map(z=>`<option value="${esc(z)}" ${(o.zone||"")===z?"selected":""}>${z===""?"อัตโนมัติ ("+zoneName(autoZone(m.code))+")":zoneName(z)}</option>`).join("")}</select></td>
+      <td><input type="text" class="slDesc" data-c="${esc(m.code)}" value="${esc(o.desc||"")}" style="min-height:30px;padding:2px 8px;width:100%;min-width:120px"></td>
+      <td><span class="st ${n.status}">${SL_ST[n.status]}</span>${n.ended?`<div class="sub">กลับมาใช้ ${fmtD(addDays(n.ended.until,1))}</div>`:""}</td>
+      <td class="sub">${n.status!=="active"?`${fmtD(n.since)}${n.until?" – "+fmtD(n.until):""}${n.reason?`<br>${esc(n.reason)}`:""}`:"–"}</td>
+      <td>${fmtD(m.last)}${m.age!==null?`<div class="sub">${m.age} วันก่อน</div>`:`<div class="sub">ยังไม่เคยนับ</div>`}</td>
+      <td style="white-space:nowrap"><button class="btn sm" onclick="openStatusModal(['${esc(m.code)}'])">เปลี่ยนสถานะ</button>
+        ${S.slocs[m.code] && !m.counts.length && !m.plans.length ? `<button class="btn sm danger" onclick="delSloc('${esc(m.code)}',this)">ลบ</button>` : ""}</td></tr>`;
+  }).join("") : `<tr><td colspan="8" class="empty">ไม่มีรายการ</td></tr>`);
   document.querySelectorAll(".slZone").forEach(el=>el.onchange=()=>saveSloc(el.dataset.c,{zone:el.value}));
   document.querySelectorAll(".slDesc").forEach(el=>el.onchange=()=>saveSloc(el.dataset.c,{desc:el.value.trim()}));
+  document.querySelectorAll(".slChk").forEach(el=>el.onchange=()=>{ el.checked?slSel.add(el.value):slSel.delete(el.value); renderSlocs(); });
+  $("#slAll").onchange = e => { rows.forEach(m=> e.target.checked ? slSel.add(m.code) : slSel.delete(m.code)); renderSlocs(); };
+  $("#slBulk").classList.toggle("hide", !slSel.size);
+  $("#slBulkN").textContent = `เลือกแล้ว ${slSel.size} Sloc: ${[...slSel].slice(0,8).join(", ")}${slSel.size>8?" …":""}`;
+}
+function openStatusModal(codes){
+  if (!codes || !codes.length) return;
+  const one = codes.length===1 ? slocNow(codes[0]) : {status:"active"};
+  const openPlans = Object.entries(S.plans).filter(([id,p]) => codes.includes(p.sloc) && p.status!=="done" && p.status!=="cancelled" && p.date >= todayStr());
+  openModal(`
+    <div class="row"><h2>เปลี่ยนสถานะ Sloc</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="sub">${codes.map(c=>`<span class="mono">${esc(c)}</span>`).join(", ")}</div>
+    <div class="stpick">
+      <label><input type="radio" name="smSt" value="active" ${one.status==="active"?"checked":""}><b>✅ ใช้งาน</b><span class="sub">ต้องนับตามรอบปกติ</span></label>
+      <label><input type="radio" name="smSt" value="paused" ${one.status==="paused"?"checked":""}><b>⏸️ พักใช้ชั่วคราว</b><span class="sub">ไม่ต้องนับช่วงที่กำหนด แล้วกลับมาใช้</span></label>
+      <label><input type="radio" name="smSt" value="retired" ${one.status==="retired"?"checked":""}><b>⛔ ยกเลิกใช้</b><span class="sub">ไม่ต้องนับอีก ประวัติเดิมยังอยู่</span></label>
+    </div>
+    <div class="fgrid">
+      <label class="f">มีผลตั้งแต่<input type="date" id="smSince" value="${todayStr()}"></label>
+      <label class="f" id="smUntilL">ถึงวันที่ (พักใช้)<input type="date" id="smUntil"></label>
+      <label class="f">เหตุผล<select id="smReason">${SL_REASONS.map(r=>`<option>${r}</option>`).join("")}</select></label>
+      <label class="f">ผู้แก้ไข<input type="text" id="smBy" list="ppl" placeholder="ชื่อ">${peopleOptions()}</label>
+    </div>
+    <label class="f">หมายเหตุเพิ่มเติม<input type="text" id="smNote" placeholder="เช่น ย้ายของไป EAE0"></label>
+    ${openPlans.length?`<label style="display:block;margin-top:10px"><input type="checkbox" id="smCancel" checked> ยกเลิกแผนที่ยังไม่ได้นับของ Sloc นี้ (${openPlans.length} แผน)</label>`:""}
+    <div class="banner info" style="margin-top:12px">ไตรมาส/ช่วงที่ Sloc ไม่ได้ “ใช้งาน” ณ วันสุดท้ายของช่วง จะไม่ถูกนับเป็นเป้าหมายใน % · ถ้ามีการนับจริงในช่วงนั้น ยังนับเป็นนับครบตามปกติ · ช่วงก่อนวันที่มีผลไม่เปลี่ยน</div>
+    <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="smSave">บันทึกสถานะ</button></div>`);
+  const sync = () => { const v = document.querySelector('input[name=smSt]:checked').value; $("#smUntilL").style.display = v==="paused"?"":"none"; $("#smReason").disabled = v==="active"; };
+  document.querySelectorAll('input[name=smSt]').forEach(r=>r.onchange=sync); sync();
+  $("#smSave").onclick = async () => {
+    const status = document.querySelector('input[name=smSt]:checked').value;
+    const since = $("#smSince").value; if (!since) return toast("กรุณาระบุวันที่มีผล");
+    const until = status==="paused" ? $("#smUntil").value : "";
+    if (until && until < since) return toast("วันสิ้นสุดต้องหลังวันเริ่ม");
+    const reason = status==="active" ? ($("#smNote").value.trim()||"เปิดใช้งาน") : [$("#smReason").value, $("#smNote").value.trim()].filter(Boolean).join(" · ");
+    const entry = { status, since, until, reason, by:$("#smBy").value.trim(), at:new Date().toISOString() };
+    const cancel = $("#smCancel") && $("#smCancel").checked && status!=="active";
+    closeModal();
+    try {
+      for (const c of codes) {
+        const o = Object.assign({code:c}, S.slocs[c]||{});
+        const hist = slocHistory(c).filter(e => e.since !== since);   // วันเดียวกันให้ทับรายการเดิม
+        hist.push(entry); hist.sort((a,b)=>a.since.localeCompare(b.since));
+        const now = (() => { let cur={status:"active"}; for (const e of hist) if (e.since<=todayStr()) cur=e; return cur; })();
+        await Store.put("slocs", c, Object.assign(o, { history:hist, status:now.status, since:now.since||"", until:now.until||"", reason:now.reason||"" }));
+      }
+      if (cancel) for (const [id,p] of openPlans) if (p.date >= since) await Store.put("plans", id, Object.assign({}, p, {status:"cancelled", note:[p.note, "Sloc "+SL_ST[status]].filter(Boolean).join(" · "), updatedAt:new Date().toISOString()}));
+      slSel.clear();
+      toast(`อัปเดตสถานะ ${codes.length} Sloc แล้ว`);
+    } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
 }
 async function saveSloc(code, patch){
   const o = Object.assign({code}, S.slocs[code]||{}, patch);
@@ -1011,7 +1172,7 @@ function currentQ(d=new Date()){
 function qLabel(fy,q){ const r=qRange(fy,q); return `${TH_MON[r.a.getMonth()]}–${TH_MON[r.b.getMonth()]} ${String(r.b.getFullYear()+543).slice(2)}`; }
 function fyLabel(fy){ return fyStart()===1 ? "ปี "+(fy+543) : `ปีบัญชี ${fy+543}/${String(fy+544).slice(2)}`; }
 function pctColor(p){ return p>=100 ? "var(--done)" : p>=50 ? "var(--partial)" : p>0 ? "var(--late)" : "var(--none)"; }
-function heatBg(p){ if (p>=100) return ["#1f8a4c","#fff"]; if (p>=75) return ["#7cc79a","#0f3d23"]; if (p>=50) return ["#c9e8d3","#1d5233"]; if (p>=25) return ["#fbe3b8","#6e4a0d"]; if (p>0) return ["#fbd3c2","#7a2e0e"]; return ["#f1f2ef","#8a918d"]; }
+function heatBg(p){ if (p>=100) return ["linear-gradient(135deg,#10b981,#059669)","#fff"]; if (p>=75) return ["#6ee7b7","#064e3b"]; if (p>=50) return ["#d1fae5","#065f46"]; if (p>=25) return ["#fef3c7","#92400e"]; if (p>0) return ["#ffe4e6","#9f1239"]; return ["#f1f5f9","#94a3b8"]; }
 let qYear = null, qSel = null, qBasis = "sloc";
 function coverage(from, to){
   const info = slocInfo(); const today = todayStr();
@@ -1020,8 +1181,10 @@ function coverage(from, to){
     const done = m.counts.filter(c => c.lastDate && c.lastDate>=from && c.lastDate<=to && !(c.notCounted>0)).map(c=>c.lastDate).sort();
     const partial = m.counts.some(c => c.lastDate && c.lastDate>=from && c.lastDate<=to && c.notCounted>0);
     const plans = m.plans.filter(p => p.date>=from && p.date<=to && p.status!=="cancelled" && p.status!=="done").map(p=>p.date).sort();
-    const st = done.length ? "done" : plans.length ? "planned" : partial ? "partial" : "none";
-    slocs[m.code] = { code:m.code, zone:m.zone, st, done, plans, w:m.sizeEst };
+    const req = requiredIn(m.code, to);
+    const st = done.length ? "done" : !req ? "off" : plans.length ? "planned" : partial ? "partial" : "none";
+    slocs[m.code] = { code:m.code, zone:m.zone, st, done, plans, w:m.sizeEst, sl: statusOn(m.code, evalDate(to)).status };
+    if (st==="off") continue;
     const z = zones[m.zone] ||= { tot:0, done:0, plan:0, wTot:0, wDone:0, wPlan:0 };
     z.tot++; z.wTot += m.sizeEst;
     if (st==="done"){ z.done++; z.wDone += m.sizeEst; }
@@ -1054,9 +1217,10 @@ function renderQuarter(){
   $("#qRing").innerHTML = `
     <div class="sub">ภาพรวม Q${fq} · ${qLabel(qYear,fq)}</div>
     <svg width="160" height="160" viewBox="0 0 160 160">
-      <circle cx="80" cy="80" r="${R}" fill="none" stroke="#eef0eb" stroke-width="16"/>
-      <circle cx="80" cy="80" r="${R}" fill="none" stroke="#9db7f0" stroke-width="16" stroke-dasharray="${L*Math.min(1,(pAll+pPl)/100)} ${L}" transform="rotate(-90 80 80)"/>
-      <circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--done)" stroke-width="16" stroke-linecap="${pAll>0&&pAll<100?"round":"butt"}" stroke-dasharray="${L*pAll/100} ${L}" transform="rotate(-90 80 80)"/>
+      <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>
+      <circle cx="80" cy="80" r="${R}" fill="none" stroke="#eef1f7" stroke-width="16"/>
+      <circle cx="80" cy="80" r="${R}" fill="none" stroke="#7dd3fc" stroke-width="16" stroke-dasharray="${L*Math.min(1,(pAll+pPl)/100)} ${L}" transform="rotate(-90 80 80)"/>
+      <circle cx="80" cy="80" r="${R}" fill="none" stroke="url(#rg)" stroke-width="16" stroke-linecap="${pAll>0&&pAll<100?"round":"butt"}" stroke-dasharray="${L*pAll/100} ${L}" transform="rotate(-90 80 80)"/>
       <text x="80" y="82" text-anchor="middle" font-size="32" font-weight="700" fill="var(--ink)" font-family="IBM Plex Sans Thai">${Math.round(pAll)}%</text>
       <text x="80" y="104" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans Thai">นับครบแล้ว</text>
     </svg>
@@ -1066,8 +1230,8 @@ function renderQuarter(){
   $("#qNowTitle").textContent = `แต่ละโซน — Q${fq} (${qLabel(qYear,fq)})${C.current?" · ไตรมาสปัจจุบัน":""}`;
   $("#qBars").innerHTML = zl.map(z => {
     const zz = C.zones[z]; const pd = pctOf(zz,"done"), pp = pctOf(zz,"plan");
-    return `<div class="zbar" onclick="qPick(${fq},'${esc(z)}')" title="${zz?`${zz.done}/${zz.tot} Sloc`:"ไม่มี Sloc"}"><span><b>${esc(zoneName(z))}</b></span>
-      <div class="bar"><span style="width:${pd}%;background:var(--done)"></span><span style="width:${pp}%;background:#9db7f0"></span></div>
+    return `<div class="zbar" style="--zc:${zoneColor(z)}" onclick="qPick(${fq},'${esc(z)}')" title="${zz?`${zz.done}/${zz.tot} Sloc`:"ไม่มี Sloc"}"><span class="zn"><i></i><b>${esc(zoneName(z))}</b></span>
+      <div class="bar"><span style="width:${pd}%;background:linear-gradient(90deg,#34d399,#059669)"></span><span style="width:${pp}%;background:#7dd3fc"></span></div>
       <b class="p" style="color:${zz?pctColor(pd):"var(--none)"}">${zz?Math.round(pd)+"%":"–"}</b></div>`;
   }).join("");
 
@@ -1086,14 +1250,14 @@ function renderQuarter(){
     const c = coverage(qRange(qYear,1).from, qRange(qYear,4).to); return c; })();
   const yCell = z => { const zz = z==="__all"?yAll.all:yAll.zones[z]; if(!zz||!zz.tot) return `<td class="fut">–</td>`; const pd=pctOf(zz,"done"); const [bg,fg]=heatBg(pd); return `<td style="background:${bg};color:${fg};cursor:default"><b>${Math.round(pd)}%</b><small>${zz.done}/${zz.tot}</small></td>`; };
   $("#qHeat").innerHTML = `<tr><th class="zn">โซน</th>${[1,2,3,4].map(q=>`<th>Q${q}${cur.fy===qYear&&cur.q===q?" ●":""}<div class="sub" style="font-weight:400">${qLabel(qYear,q)}</div></th>`).join("")}<th>ทั้งปี<div class="sub" style="font-weight:400">นับอย่างน้อย 1 ครั้ง</div></th></tr>`
-    + zl.map(z => `<tr><td class="zn">${esc(zoneName(z))}<div class="sub" style="font-weight:400">${(covs[0].zones[z]||{}).tot||0} Sloc</div></td>${covs.map((c,i)=>cell(c,z,i+1)).join("")}${yCell(z)}</tr>`).join("")
+    + zl.map(z => `<tr><td class="zn" style="--zc:${zoneColor(z)}"><i></i>${esc(zoneName(z))}<div class="sub" style="font-weight:400;padding-left:16px">${(covs[fq-1].zones[z]||{}).tot||0} Sloc</div></td>${covs.map((c,i)=>cell(c,z,i+1)).join("")}${yCell(z)}</tr>`).join("")
     + `<tr class="tot"><td class="zn">รวมทุกโซน</td>${covs.map((c,i)=>cell(c,"__all",i+1)).join("")}${yCell("__all")}</tr>`;
 
   // ---- matrix ----
   const zf = $("#qZone").value; const show = $("#qShow").value;
   $("#qMxTitle").textContent = `รายละเอียด Sloc × ไตรมาส${zf?" — "+zoneName(zf):""}`;
   const fmtS = d => { const x=parseYmd(d); return x.getDate()+" "+TH_MON[x.getMonth()]; };
-  const codes = Object.keys(covs[0].slocs).filter(c => (!zf || zoneOf(c)===zf) && (!show || covs[fq-1].slocs[c].st!=="done"))
+  const codes = Object.keys(covs[0].slocs).filter(c => (!zf || zoneOf(c)===zf) && (!show || !["done","off"].includes(covs[fq-1].slocs[c].st)))
     .sort((a,b)=> zoneIdx(zoneOf(a))-zoneIdx(zoneOf(b)) || a.localeCompare(b));
   let lastZ = null, rows = "";
   for (const c of codes) {
@@ -1104,6 +1268,7 @@ function renderQuarter(){
       if (x.st==="done") return `<td class="q"><span class="y" title="${x.done.map(fmtD).join(", ")}">✓ ${fmtS(x.done[x.done.length-1])}${x.done.length>1?` (${x.done.length})`:""}</span></td>`;
       if (x.st==="planned") return `<td class="q"><span class="pl">แผน ${fmtS(x.plans[0])}</span></td>`;
       if (x.st==="partial") return `<td class="q"><span class="pa">ไม่ครบ</span></td>`;
+      if (x.st==="off") return `<td class="q"><span class="of">${x.sl==="paused"?"พักใช้":"ยกเลิก"}</span></td>`;
       return `<td class="q"><span class="no">${cv.future||cv.noData?"·":"✗"}</span></td>`;
     }).join("") + `</tr>`;
   }
@@ -1146,12 +1311,13 @@ function exportHistory(){
 /* ================= wiring ================= */
 document.querySelectorAll("#pQuick button").forEach(b=>b.onclick=()=>setQuick(b.dataset.q));
 ["#pFrom","#pTo"].forEach(s=>$(s).onchange=()=>{ document.querySelectorAll("#pQuick button").forEach(x=>x.classList.remove("on")); renderAll(); });
-$("#ovSearch").oninput = renderOverview;
+$("#ovSearch").oninput = renderOverview; $("#ovShowOff").onchange = renderOverview;
 document.querySelectorAll("#qBasis button").forEach(b=>b.onclick=()=>{ qBasis=b.dataset.b; renderQuarter(); });
 $("#qPrev").onclick=()=>{ qYear--; qSel={q:1,z:qSel?qSel.z:""}; renderQuarter(); };
 $("#qNext").onclick=()=>{ qYear++; qSel={q:1,z:qSel?qSel.z:""}; renderQuarter(); };
 $("#qZone").onchange=()=>{ qSel = Object.assign({}, qSel, {z:$("#qZone").value}); renderQuarter(); };
 $("#qShow").onchange=renderQuarter;
+["#slZone","#slStatus"].forEach(x=>$(x).onchange=renderSlocs); $("#slSearch").oninput=renderSlocs;
 $("#calPrev").onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1); calDay=null; renderPlan(); };
 $("#calNext").onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1); calDay=null; renderPlan(); };
 $("#calToday").onclick=()=>{ const d=new Date(); calMonth=new Date(d.getFullYear(),d.getMonth(),1); calDay=null; renderPlan(); };
@@ -1169,7 +1335,7 @@ let q0="month"; try{ q0 = localStorage.getItem(LS_KEY+".period") || "month"; }ca
 setQuick(["month","quarter","year"].includes(q0)?q0:"month");
 route();
 function pinToggle(){ if (getPin()) { setPin(""); toast("ออกจากโหมดแก้ไขแล้ว"); Store.pull().catch(()=>{}); } else askPin(); }
-setInterval(()=>{ const b=$("#pinBtn"); if(!b) return; b.style.display = Store.pinRequired ? "" : "none"; b.textContent = getPin() ? "🔓 ออกจากโหมดแก้ไข" : "🔒 ใส่ PIN"; }, 1000);
+setInterval(()=>{ const b=$("#pinBtn"); if(!b) return; b.style.display = Store.pinRequired ? "" : "none"; b.textContent = getPin() ? "🔓 โหมดแก้ไข" : "🔒 ใส่ PIN"; b.title = getPin() ? "กดเพื่อออกจากโหมดแก้ไข" : "ใส่ PIN เพื่อแก้ไขข้อมูล"; }, 1000);
 Store.init();
 </script>
 </body>
