@@ -98,7 +98,7 @@ table.t tr:hover td{background:#f8faff}
 table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
 table.t tr.dim td{color:var(--off)}
 .tw{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:12px}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line);background:#fff;border-radius:12px;overflow:hidden}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1px solid var(--line);border-top:1px solid var(--line);background:#fff;border-radius:12px;overflow:hidden}
 .cal .dh{padding:7px;font-size:12px;color:var(--muted);text-align:center;background:#f8fafc;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-weight:500}
 .cal .d{min-height:106px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .1s}
 .cal .d:hover{background:#f8faff}
@@ -179,6 +179,34 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
 .bulkbar .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
 .sugg{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid var(--partial-bd);border-radius:14px;padding:12px 16px;margin:14px 0}
 .sugg .ic{font-size:22px}
+/* ---- notices ---- */
+#notices{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+.notice{position:relative;border-radius:18px;padding:18px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;overflow:hidden;box-shadow:0 10px 30px rgba(79,70,229,.18)}
+.notice.count{background:linear-gradient(120deg,#4338ca 0%,#7c3aed 50%,#db2777 100%);color:#fff}
+.notice.info{background:linear-gradient(120deg,#e0f2fe,#ede9fe);color:#1e1b4b;box-shadow:var(--shadow)}
+.notice.urgent{background:linear-gradient(120deg,#e11d48,#f97316);color:#fff;box-shadow:0 10px 30px rgba(225,29,72,.2)}
+.notice::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.09)}
+.notice .nic{font-size:34px;line-height:1;flex:none}
+.notice .nbody{flex:1;min-width:240px;position:relative;z-index:1}
+.notice .ntag{display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.03em;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,.2);margin-bottom:4px}
+.notice.info .ntag{background:rgba(79,70,229,.12);color:#4338ca}
+.notice .ntitle{font-family:"Prompt",sans-serif;font-size:20px;font-weight:600;line-height:1.3}
+.notice .ndetail{opacity:.92;font-size:13.5px;margin-top:4px;white-space:pre-line}
+.notice .ndays{display:flex;gap:8px;position:relative;z-index:1}
+.notice .nday{background:rgba(255,255,255,.95);color:#312e81;border-radius:12px;padding:6px 12px;text-align:center;min-width:58px;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.notice.info .nday{background:#fff}
+.notice .nday b{display:block;font-family:"Prompt",sans-serif;font-size:22px;line-height:1.1}
+.notice .nday small{font-size:11px;color:#6366f1;font-weight:600}
+.notice .nday.today{background:#fde047;color:#713f12}
+.notice .ncount{position:relative;z-index:1;text-align:center;min-width:110px}
+.notice .ncount b{display:block;font-family:"Prompt",sans-serif;font-size:34px;line-height:1}
+.notice .ncount span{font-size:12.5px;opacity:.9}
+.notice .nx{position:absolute;top:8px;right:12px;z-index:2;background:none;border:none;color:inherit;opacity:.7;font-size:20px;cursor:pointer}
+.notice .nx:hover{opacity:1}
+.cal .pc.ev{background:linear-gradient(90deg,#7c3aed,#db2777);color:#fff;font-weight:600;white-space:normal;line-height:1.3;padding:3px 6px}
+.cal .d.evday{background:linear-gradient(180deg,#faf5ff,#fff)}
+.nlist .it{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.nlist .dot{width:10px;height:10px;border-radius:50%;flex:none}
 </style>
 </head>
 <body>
@@ -197,6 +225,7 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
 
 <main>
   <div id="banner"></div>
+  <div id="notices"></div>
 
   <!-- OVERVIEW -->
   <section id="v-overview">
@@ -351,6 +380,10 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
         <div id="impPreview" style="margin-top:14px"></div>
       </div>
       <div class="panel">
+        <div class="row" style="margin-bottom:8px"><h3 style="margin:0">📢 ประกาศ</h3><div class="spacer"></div><button class="btn sm pri" onclick="openNoticeModal()">+ เพิ่มประกาศ</button></div>
+        <div class="sub" style="margin-bottom:8px">แสดงเป็นแถบด้านบนของทุกหน้า และไฮไลต์วันในปฏิทินแผน</div>
+        <div class="nlist" id="noticeList"></div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
         <h3>ตั้งค่า</h3>
         <label class="f">รอบการนับเป้าหมาย (วัน) — ใช้แจ้งเตือน Sloc ที่ไม่ได้นับนานเกิน<input type="number" id="cfgCycle" min="1" style="width:120px"></label>
         <label class="f" style="margin-top:10px">ความสามารถนับต่อวัน (จำนวนรายการ/วัน) — ใช้จัดแผนอัตโนมัติ<input type="number" id="cfgCap" min="10" style="width:120px"></label>
@@ -431,8 +464,8 @@ function zoneOf(code){
 }
 
 /* ================= state & storage ================= */
-const S = { counts:{}, plans:{}, slocs:{}, config:{ cycleDays:30, capacity:300, people:"" } };
-const COLS = ["counts","plans","slocs"];
+const S = { counts:{}, plans:{}, slocs:{}, notices:{}, config:{ cycleDays:30, capacity:300, people:"" } };
+const COLS = ["counts","plans","slocs","notices"];
 const LS_KEY = "stockcount-plan.v1";
 /* Store: คุยกับ server (/api/state, /api/write) • ข้อมูลกลางของทีม • ดึงการเปลี่ยนแปลงทุก 15 วินาที */
 const Store = {
@@ -580,12 +613,13 @@ function curView(){ const v=location.hash.slice(1); return VIEWS.includes(v)?v:"
 
 function renderAll(){
   fillZoneSelects();
+  renderNotices();
   const v = curView();
   if (v==="overview") renderOverview();
   if (v==="plan") renderPlan();
   if (v==="quarter") renderQuarter();
   if (v==="history") renderHistory();
-  if (v==="import") renderImportSide();
+  if (v==="import") { renderImportSide(); renderNoticeList(); }
   if (v==="slocs") renderSlocs();
   if ($("#drawer").classList.contains("on") && $("#drawer").dataset.code) renderDrawer($("#drawer").dataset.code);
 }
@@ -852,10 +886,11 @@ function renderPlan(){
     const out = d.getMonth()!==calMonth.getMonth();
     const ps = (byDate[s]||[]).sort((a,b)=>a.sloc.localeCompare(b.sloc));
     const ac = actual[s] ? [...actual[s]].sort() : [];
-    const items = ps.slice(0,4).map(p=>`<div class="pc ${planStatus(p)}" title="${esc(p.sloc+" · "+(p.assignee||"")+" · "+PLAN_ST[planStatus(p)])}">${esc(p.sloc)}${p.assignee?" · "+esc(p.assignee.split(".")[0]):""}</div>`).join("")
+    const evs = noticeList().filter(n => n.start && s >= n.start && s <= (n.end||n.start));
+    const items = evs.map(n=>`<div class="pc ev" title="${esc(n.title)}">📢 ${esc(n.title)}</div>`).join("") + ps.slice(0,4).map(p=>`<div class="pc ${planStatus(p)}" title="${esc(p.sloc+" · "+(p.assignee||"")+" · "+PLAN_ST[planStatus(p)])}">${esc(p.sloc)}${p.assignee?" · "+esc(p.assignee.split(".")[0]):""}</div>`).join("")
       + (ps.length>4?`<div class="sub" style="font-size:11px">+${ps.length-4} แผน</div>`:"")
       + (ac.length?`<div class="pc actual" title="นับจริง: ${esc(ac.join(", "))}">นับจริง ${ac.length} Sloc</div>`:"");
-    html += `<div class="d ${out?"out":""} ${[0,6].includes(d.getDay())?"we":""} ${s===today?"today":""}" data-d="${s}"><div class="dn">${d.getDate()}${ps.length?`<em>${ps.length} แผน</em>`:""}</div>${items}</div>`;
+    html += `<div class="d ${out?"out":""} ${[0,6].includes(d.getDay())?"we":""} ${s===today?"today":""} ${evs.length?"evday":""}" data-d="${s}"><div class="dn">${d.getDate()}${ps.length?`<em>${ps.length} แผน</em>`:""}</div>${items}</div>`;
   }
   $("#cal").innerHTML = html;
   $("#cal").querySelectorAll(".d").forEach(el=>el.onclick=()=>{ calDay = (calDay===el.dataset.d)?null:el.dataset.d; renderPlan(); });
@@ -1284,6 +1319,85 @@ function exportQuarter(){
   rows.push([]); rows.push(["Zone","Sloc ทั้งหมด", ...[1,2,3,4].map(q=>"Q"+q+" %")]);
   zoneList().forEach(z => rows.push([zoneName(z), (covs[0].zones[z]||{}).tot||0, ...covs.map(cv=>cv.zones[z]?Math.round(pctOf(cv.zones[z],"done"))+"%":"")]));
   saveFile("quarterly-coverage-"+(qYear+543)+".csv", csv(rows));
+}
+
+/* ================= notices (ประกาศ) ================= */
+const NT_TYPE = { count:{lbl:"ตรวจนับประจำปี", ic:"📦", dot:"#7c3aed"}, info:{lbl:"ข่าวสาร", ic:"📢", dot:"#0ea5e9"}, urgent:{lbl:"ด่วน", ic:"⚠️", dot:"#e11d48"} };
+const TH_DOW_FULL = ["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
+function noticeList(){ return Object.entries(S.notices||{}).map(([id,n])=>Object.assign({id},n)).sort((a,b)=>(a.start||"").localeCompare(b.start||"")); }
+function noticeVisible(n, today=todayStr()){
+  const from = n.showFrom || "0000-00-00", until = n.showUntil || n.end || n.start || "9999-12-31";
+  return !n.hidden && today >= from && today <= until;
+}
+function dismissedKey(n){ return "stockcount.dismiss."+n.id+"."+(n.updatedAt||n.createdAt||""); }
+function isDismissed(n){ try { return localStorage.getItem(dismissedKey(n))==="1"; } catch(e){ return false; } }
+function dismissNotice(id){ const n=S.notices[id]; if(!n) return; try{ localStorage.setItem(dismissedKey(Object.assign({id},n)),"1"); }catch(e){} renderNotices(); }
+function fmtRange(a,b){
+  if (!a) return ""; const x=parseYmd(a), y=parseYmd(b||a);
+  const yy = d => d.getFullYear()+543;
+  if (a===(b||a)) return `${x.getDate()} ${TH_MON_FULL[x.getMonth()]} ${yy(x)}`;
+  if (x.getMonth()===y.getMonth() && x.getFullYear()===y.getFullYear()) return `${x.getDate()}–${y.getDate()} ${TH_MON_FULL[x.getMonth()]} ${yy(x)}`;
+  return `${x.getDate()} ${TH_MON[x.getMonth()]} ${yy(x)} – ${y.getDate()} ${TH_MON[y.getMonth()]} ${yy(y)}`;
+}
+function renderNotices(today = todayStr()){
+  const list = noticeList().filter(n => noticeVisible(n, today) && !isDismissed(n));
+  $("#notices").innerHTML = list.map(n => {
+    const t = NT_TYPE[n.type] || NT_TYPE.info;
+    const start = n.start, end = n.end || n.start;
+    let cd = "";
+    if (start) {
+      if (today < start) { const d = daysBetween(today, start); cd = `<b>${d}</b><span>${d===1?"พรุ่งนี้!":"วันก่อนเริ่ม"}</span>`; }
+      else if (today <= end) { const k = daysBetween(start, today)+1, tot = daysBetween(start, end)+1; cd = `<b>วันนี้</b><span>${tot>1?`วันที่ ${k} จาก ${tot}`:"กำลังดำเนินการ"}</span>`; }
+      else cd = `<b>✓</b><span>เสร็จสิ้นแล้ว</span>`;
+    }
+    const days = [];
+    if (start) { const tot = Math.min(7, daysBetween(start, end)+1); for (let i=0;i<tot;i++){ const d=addDays(start,i), x=parseYmd(d); days.push(`<div class="nday ${d===today?"today":""}"><small>${TH_DOW[x.getDay()]}</small><b>${x.getDate()}</b><small>${TH_MON[x.getMonth()]}</small></div>`); } }
+    return `<div class="notice ${esc(n.type||"info")}">
+      <button class="nx" title="ซ่อนประกาศนี้ (เฉพาะเครื่องนี้)" onclick="dismissNotice('${esc(n.id)}')">×</button>
+      <div class="nic">${t.ic}</div>
+      <div class="nbody"><span class="ntag">${esc(t.lbl)}${start?" · "+fmtRange(start,end):""}</span>
+        <div class="ntitle">${esc(n.title)}</div>${n.detail?`<div class="ndetail">${esc(n.detail)}</div>`:""}</div>
+      ${days.length?`<div class="ndays">${days.join("")}</div>`:""}
+      ${cd?`<div class="ncount">${cd}</div>`:""}
+    </div>`;
+  }).join("");
+}
+function renderNoticeList(){
+  const list = noticeList(); const today = todayStr();
+  $("#noticeList").innerHTML = list.length ? list.map(n => {
+    const t = NT_TYPE[n.type]||NT_TYPE.info; const vis = noticeVisible(n, today);
+    return `<div class="it"><span class="dot" style="background:${t.dot}"></span><div style="flex:1;min-width:0"><b>${esc(n.title)}</b>
+      <div class="sub">${fmtRange(n.start, n.end)||"ไม่มีวันที่"} · ${vis?'<span style="color:var(--done)">กำลังแสดง</span>':(n.hidden?"ปิดไว้":(today < (n.showFrom||"") ? "เริ่มแสดง "+fmtD(n.showFrom) : "หมดเวลาแสดง"))}</div></div>
+      <button class="btn sm" onclick="openNoticeModal('${esc(n.id)}')">แก้ไข</button></div>`;
+  }).join("") : `<div class="sub">ยังไม่มีประกาศ</div>`;
+}
+function openNoticeModal(id){
+  const n = id ? Object.assign({}, S.notices[id]) : { type:"count", title:"", detail:"", start:"", end:"", showFrom:todayStr(), showUntil:"" };
+  openModal(`
+    <div class="row"><h2>${id?"แก้ไขประกาศ":"เพิ่มประกาศ"}</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="fgrid">
+      <label class="f">ประเภท<select id="nmType">${Object.entries(NT_TYPE).map(([k,v])=>`<option value="${k}" ${n.type===k?"selected":""}>${v.ic} ${v.lbl}</option>`).join("")}</select></label>
+      <label class="f">วันที่เริ่ม<input type="date" id="nmStart" value="${esc(n.start)}"></label>
+      <label class="f">วันที่สิ้นสุด<input type="date" id="nmEnd" value="${esc(n.end)}"></label>
+    </div>
+    <label class="f">หัวข้อ<input type="text" id="nmTitle" value="${esc(n.title)}" placeholder="เช่น การตรวจนับสต็อกครั้งที่ 2 ประจำปี 2569"></label>
+    <label class="f" style="margin-top:10px">รายละเอียด (ไม่บังคับ)<textarea id="nmDetail" placeholder="เช่น งดรับ-จ่ายสินค้าทุก Sloc ระหว่างตรวจนับ · ประชุมทีมนับ 08:00 น.">${esc(n.detail)}</textarea></label>
+    <div class="fgrid">
+      <label class="f">เริ่มแสดงประกาศ<input type="date" id="nmFrom" value="${esc(n.showFrom)}"></label>
+      <label class="f">แสดงถึงวันที่ (ว่าง = ถึงวันสิ้นสุด)<input type="date" id="nmUntil" value="${esc(n.showUntil)}"></label>
+      <label class="f">&nbsp;<span><input type="checkbox" id="nmHidden" ${n.hidden?"checked":""}> ปิดการแสดงชั่วคราว</span></label>
+    </div>
+    <div class="row" style="margin-top:12px">${id?`<button class="btn danger" id="nmDel">ลบประกาศ</button>`:""}<div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="nmSave">บันทึกประกาศ</button></div>`);
+  $("#nmStart").onchange = () => { if (!$("#nmEnd").value || $("#nmEnd").value < $("#nmStart").value) $("#nmEnd").value = $("#nmStart").value; };
+  $("#nmSave").onclick = async () => {
+    const d = { type:$("#nmType").value, title:$("#nmTitle").value.trim(), detail:$("#nmDetail").value.trim(), start:$("#nmStart").value, end:$("#nmEnd").value||$("#nmStart").value,
+      showFrom:$("#nmFrom").value, showUntil:$("#nmUntil").value, hidden:$("#nmHidden").checked, createdAt:n.createdAt||new Date().toISOString(), updatedAt:new Date().toISOString() };
+    if (!d.title) return toast("กรุณาใส่หัวข้อ");
+    if (d.end && d.start && d.end < d.start) return toast("วันสิ้นสุดต้องไม่ก่อนวันเริ่ม");
+    closeModal();
+    try { await Store.put("notices", id || "n_"+uid(), d); toast("บันทึกประกาศแล้ว"); } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
+  if (id) { let armed=false; $("#nmDel").onclick = async () => { if(!armed){ armed=true; $("#nmDel").textContent="กดอีกครั้งเพื่อยืนยัน"; return; } closeModal(); try { await Store.del("notices", id); toast("ลบประกาศแล้ว"); } catch(e){ toast("ลบไม่สำเร็จ"); } }; }
 }
 
 /* ================= export ================= */

@@ -13,7 +13,7 @@ const zlib = require('node:zlib');
 const PORT = Number(process.env.PORT) || 3010;
 const EDIT_PIN = String(process.env.EDIT_PIN || '').trim();
 const PUBLIC = path.join(__dirname, 'public');
-const COLS = new Set(['counts', 'plans', 'slocs', 'config']);
+const COLS = new Set(['counts', 'plans', 'slocs', 'config', 'notices']);
 const ID_RE = /^[\w.:@+~-]{1,120}$/;
 const MAX_BODY = 30 * 1024 * 1024;
 
