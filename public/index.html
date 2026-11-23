@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แผนการตรวจนับสต็อก Zone A–L</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="/vendor/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f4f5f2; --panel:#ffffff; --ink:#1c2321; --muted:#66706c; --line:#e1e4de; --soft:#eef0eb;
+  --accent:#0f5c4d; --accent-soft:#dcebe6;
+  --done:#1f8a4c; --done-bg:#e2f3e8;
+  --plan:#2a5bd7; --plan-bg:#e4ebfb;
+  --partial:#b7791f; --partial-bg:#fbf0dc;
+  --late:#c2410c; --late-bg:#fde7dc;
+  --none:#8a918d; --none-bg:#f0f1ee;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px;line-height:1.5}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.02em}
+button,input,select,textarea{font:inherit;color:inherit}
+header.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:0 20px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+header.top h1{font-size:16px;margin:0;padding:14px 0;font-weight:600;white-space:nowrap}
+header.top h1 small{font-weight:400;color:#9fb3ac;margin-left:8px}
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
+nav.tabs a{color:#c9d3cf;text-decoration:none;padding:15px 14px;border-bottom:3px solid transparent;font-weight:500}
+nav.tabs a.on{color:#fff;border-bottom-color:#5fd0a8}
+.syncnote{margin-left:auto;font-size:12px;color:#9fb3ac;display:flex;align-items:center;gap:6px}
+.syncnote i{width:8px;height:8px;border-radius:50%;background:#9fb3ac;display:inline-block}
+.syncnote.ok i{background:#5fd0a8}.syncnote.warn i{background:#f0b44c}
+main{max-width:1400px;margin:0 auto;padding:20px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+h2{font-size:18px;margin:0 0 4px}
+h3{font-size:15px;margin:0 0 10px}
+.sub{color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:#b9c0ba}
+.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.pri:hover{background:#0b4a3e}
+.btn.danger{color:#b42318}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+input[type=text],input[type=date],input[type=number],select,textarea{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff;min-height:34px}
+textarea{width:100%;min-height:60px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+label.f > *{color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.kpi b{display:block;font-size:26px;font-weight:600;line-height:1.2}
+.kpi span{color:var(--muted);font-size:13px}
+.kpi.done b{color:var(--done)}.kpi.plan b{color:var(--plan)}.kpi.late b{color:var(--late)}.kpi.partial b{color:var(--partial)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.zone{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.zone .zh{display:flex;align-items:center;gap:10px}
+.zone .zl{width:34px;height:34px;border-radius:8px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px;flex:none}
+.zone .zl.other{font-size:11px;background:#56605c}
+.zone .zt{flex:1;min-width:0}
+.zone .zt b{font-size:14px}
+.bar{height:7px;background:var(--soft);border-radius:4px;overflow:hidden;display:flex}
+.bar > span{height:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid transparent;border-radius:7px;padding:4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;min-width:66px;font-size:12px;line-height:1.25;background:var(--none-bg);color:#4b524f}
+.chip .c{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:13px}
+.chip small{opacity:.85}
+.chip.done{background:var(--done-bg);color:var(--done);border-color:#bfe3cc}
+.chip.planned{background:var(--plan-bg);color:var(--plan);border-color:#c6d4f6}
+.chip.partial{background:var(--partial-bg);color:var(--partial);border-color:#f1d9ad}
+.chip.late{background:var(--late-bg);color:var(--late);border-color:#f6c8b2}
+.chip:hover{filter:brightness(.96)}
+.st{display:inline-block;border-radius:20px;padding:1px 9px;font-size:12px;font-weight:500;white-space:nowrap}
+.st.done{background:var(--done-bg);color:var(--done)}.st.planned{background:var(--plan-bg);color:var(--plan)}
+.st.partial,.st.inprogress{background:var(--partial-bg);color:var(--partial)}.st.late{background:var(--late-bg);color:var(--late)}
+.st.none,.st.cancelled{background:var(--none-bg);color:var(--none)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);padding:7px 8px;white-space:nowrap;background:#fafbf9;position:sticky;top:0}
+table.t td{border-bottom:1px solid var(--soft);padding:6px 8px;vertical-align:top}
+table.t tr:hover td{background:#fafbf9}
+table.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tw{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line);background:#fff;border-radius:8px;overflow:hidden}
+.cal .dh{padding:6px;font-size:12px;color:var(--muted);text-align:center;background:#fafbf9;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cal .d{min-height:104px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 5px;display:flex;flex-direction:column;gap:3px;cursor:pointer}
+.cal .d.out{background:#fafaf8;color:#b4b9b5}
+.cal .d.we{background:#fbfbf9}
+.cal .d.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.cal .d .dn{font-size:12px;font-weight:600;display:flex;justify-content:space-between}
+.cal .d .dn em{font-style:normal;font-weight:400;color:var(--muted);font-size:11px}
+.cal .pc{font-size:11.5px;border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .pc.planned{background:var(--plan-bg);color:var(--plan)}
+.cal .pc.inprogress{background:var(--partial-bg);color:var(--partial)}
+.cal .pc.done{background:var(--done-bg);color:var(--done)}
+.cal .pc.late{background:var(--late-bg);color:var(--late)}
+.cal .pc.cancelled{background:var(--none-bg);color:var(--none);text-decoration:line-through}
+.cal .pc.actual{background:transparent;color:var(--muted);border:1px dashed #c9cec9}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);gap:14px}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+.drawer-bg,.modal-bg{position:fixed;inset:0;background:rgba(20,26,24,.35);z-index:40;display:none}
+.drawer-bg.on,.modal-bg.on{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:#fff;z-index:41;transform:translateX(100%);transition:transform .2s;overflow:auto;padding:20px;box-shadow:-8px 0 30px rgba(0,0,0,.1)}
+.drawer.on{transform:none}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:12px;z-index:42;width:min(760px,96vw);max-height:92vh;overflow:auto;padding:20px;display:none;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal.on{display:block}
+.x{border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:10px 0}
+.picklist{border:1px solid var(--line);border-radius:8px;max-height:280px;overflow:auto}
+.picklist label{display:flex;gap:10px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--soft);cursor:pointer}
+.picklist label:hover{background:#fafbf9}
+.picklist .c{font-family:"IBM Plex Mono",monospace;width:56px}
+.drop{border:2px dashed #c3cac4;border-radius:12px;padding:30px;text-align:center;background:#fafbf9;cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;z-index:60;display:none;max-width:90vw}
+.toast.on{display:block}
+.banner{background:#fff6e5;border:1px solid #f1d9ad;color:#7a4f0c;padding:8px 12px;border-radius:8px;margin-bottom:12px;font-size:13px}
+.empty{color:var(--muted);text-align:center;padding:30px}
+.statline{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 14px}
+.statline div{font-size:13px;color:var(--muted)}
+.statline b{display:block;color:var(--ink);font-size:17px}
+.hide{display:none!important}
+.qtop{display:grid;grid-template-columns:260px minmax(0,1fr);gap:14px;margin-top:14px}
+@media (max-width:860px){.qtop{grid-template-columns:1fr}}
+.ring{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+.zbars{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px 22px}
+.zbar{display:grid;grid-template-columns:92px 1fr 52px;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:3px 4px;border-radius:6px}
+.zbar:hover{background:#f6f7f4}
+.zbar .bar{height:12px;border-radius:6px}
+.zbar b.p{text-align:right;font-variant-numeric:tabular-nums}
+table.hm{width:100%;border-collapse:separate;border-spacing:4px;font-size:13px}
+table.hm th{color:var(--muted);font-weight:500;text-align:center;padding:4px}
+table.hm th.zn{text-align:left}
+table.hm td{border-radius:8px;text-align:center;padding:8px 6px;cursor:pointer;min-width:90px}
+table.hm td.zn{text-align:left;cursor:default;font-weight:600;background:none;padding-left:2px;white-space:nowrap}
+table.hm td b{display:block;font-size:17px;line-height:1.2;font-variant-numeric:tabular-nums}
+table.hm td small{font-size:11.5px;opacity:.85}
+table.hm td.sel{box-shadow:0 0 0 2px var(--ink)}
+table.hm tr.tot td{border-top:2px solid var(--line)}
+table.hm td.fut{background:repeating-linear-gradient(45deg,#f6f7f4,#f6f7f4 6px,#eef0eb 6px,#eef0eb 12px);color:var(--muted)}
+.mx td.q{text-align:center;white-space:nowrap;font-size:12.5px}
+.mx td.q span{display:inline-block;border-radius:5px;padding:1px 7px}
+.mx .y{background:var(--done-bg);color:var(--done)} .mx .pl{background:var(--plan-bg);color:var(--plan)} .mx .pa{background:var(--partial-bg);color:var(--partial)} .mx .no{color:#b9beba}
+.mx tr.zh td{background:#fafbf9;font-weight:600}
+a{color:var(--accent)}
+a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:#fff;padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--ink);color:#fff}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>📦 แผนการตรวจนับสต็อก<small>Plant 1002 · Zone A–L</small></h1>
+  <nav class="tabs" id="tabs">
+    <a href="#overview" data-v="overview">ภาพรวมโซน</a>
+    <a href="#quarter" data-v="quarter">ติดตามรายไตรมาส</a>
+    <a href="#plan" data-v="plan">แผน &amp; ปฏิทิน</a>
+    <a href="#history" data-v="history">ประวัติการนับ</a>
+    <a href="#import" data-v="import">นำเข้า MI24 / ตั้งค่า</a>
+  </nav>
+  <div class="syncnote" id="sync"><i></i><span>กำลังเชื่อมต่อ…</span><button class="btn sm" id="pinBtn" style="margin-left:8px;background:transparent;color:#c9d3cf;border-color:#46524e" onclick="pinToggle()">🔒 PIN</button></div>
+</header>
+
+<main>
+  <div id="banner"></div>
+
+  <!-- OVERVIEW -->
+  <section id="v-overview">
+    <div class="row">
+      <div><h2>ภาพรวมการนับตามโซน</h2><div class="sub">สถานะของแต่ละ Sloc ในช่วงรอบการนับที่เลือก · คลิก Sloc เพื่อดูประวัติ / วางแผน</div></div>
+      <div class="spacer"></div>
+      <label class="f">รอบการนับ ตั้งแต่<input type="date" id="pFrom"></label>
+      <label class="f">ถึง<input type="date" id="pTo"></label>
+      <div class="seg" id="pQuick" style="align-self:flex-end">
+        <button data-q="month">เดือนนี้</button><button data-q="quarter">ไตรมาสนี้</button><button data-q="year">ปีนี้</button>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="row">
+      <div class="legend">
+        <span><i style="background:var(--done)"></i>นับครบแล้วในรอบ</span>
+        <span><i style="background:var(--partial)"></i>นับยังไม่ครบ</span>
+        <span><i style="background:var(--plan)"></i>มีแผนแล้ว</span>
+        <span><i style="background:var(--late)"></i>เลยกำหนดแผน</span>
+        <span><i style="background:#c4c9c5"></i>ยังไม่นับ/ไม่มีแผน</span>
+        <span>· ตัวเลขใต้รหัส = วันนับล่าสุด (กี่วันก่อน)</span>
+      </div>
+      <div class="spacer"></div>
+      <input type="text" id="ovSearch" placeholder="ค้นหา Sloc…" style="width:150px">
+      <button class="btn pri" onclick="openPlanModal()">+ วางแผนนับ</button>
+    </div>
+    <div class="zones" id="zones"></div>
+  </section>
+
+  <!-- QUARTER -->
+  <section id="v-quarter" class="hide">
+    <div class="row">
+      <div><h2>ติดตามความคืบหน้ารายไตรมาส</h2><div class="sub" id="qSub"></div></div>
+      <div class="spacer"></div>
+      <div class="seg" id="qBasis"><button data-b="sloc" class="on">ตามจำนวน Sloc</button><button data-b="items">ตามจำนวนรายการ</button></div>
+      <button class="btn sm" id="qPrev">‹</button><b id="qYear" style="min-width:90px;text-align:center"></b><button class="btn sm" id="qNext">›</button>
+    </div>
+    <div class="qtop">
+      <div class="panel ring" id="qRing"></div>
+      <div class="panel"><div class="row" style="margin-bottom:10px"><h3 style="margin:0" id="qNowTitle"></h3><div class="spacer"></div>
+        <div class="legend"><span><i style="background:var(--done)"></i>นับครบแล้ว</span><span><i style="background:#9db7f0"></i>มีแผนแล้ว</span></div></div>
+        <div class="zbars" id="qBars"></div></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="row" style="margin-bottom:4px"><h3 style="margin:0">Heatmap: % นับครบ แยกโซน × ไตรมาส</h3><div class="spacer"></div><span class="sub">คลิกช่องเพื่อดูรายละเอียด Sloc</span></div>
+      <div style="overflow:auto"><table class="hm" id="qHeat"></table></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="row" style="margin-bottom:8px"><h3 style="margin:0" id="qMxTitle">รายละเอียด Sloc × ไตรมาส</h3><div class="spacer"></div>
+        <select id="qZone"><option value="">ทุกโซน</option></select>
+        <select id="qShow"><option value="">ทุก Sloc</option><option value="missing">เฉพาะที่ยังไม่นับในไตรมาสนี้</option></select>
+        <button class="btn sm" onclick="exportQuarter()">⬇ ส่งออก CSV</button></div>
+      <div class="tw" style="max-height:620px"><table class="t mx" id="qMx"></table></div>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section id="v-plan" class="hide">
+    <div class="row">
+      <div><h2>แผนการนับ &amp; ปฏิทิน</h2><div class="sub">แผนที่วางไว้ (สีทึบ) เทียบกับวันที่นับจริงจาก MI24 (กรอบประ)</div></div>
+      <div class="spacer"></div>
+      <button class="btn" onclick="openAutoModal()">⚡ จัดแผนอัตโนมัติ</button>
+      <button class="btn pri" onclick="openPlanModal()">+ เพิ่มแผน</button>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="panel">
+        <div class="row" style="margin-bottom:10px">
+          <button class="btn sm" id="calPrev">‹</button>
+          <h3 id="calTitle" style="margin:0;min-width:150px;text-align:center"></h3>
+          <button class="btn sm" id="calNext">›</button>
+          <button class="btn sm" id="calToday">วันนี้</button>
+          <div class="spacer"></div>
+          <select id="calZone"><option value="">ทุกโซน</option></select>
+        </div>
+        <div class="cal" id="cal"></div>
+      </div>
+      <div class="panel">
+        <div class="row" style="margin-bottom:8px">
+          <h3 style="margin:0" id="plTitle">รายการแผน</h3><div class="spacer"></div>
+          <select id="plStatus">
+            <option value="open">ยังไม่เสร็จ</option><option value="">ทั้งหมด</option>
+            <option value="planned">วางแผน</option><option value="inprogress">กำลังนับ</option>
+            <option value="done">เสร็จแล้ว</option><option value="cancelled">ยกเลิก</option>
+          </select>
+        </div>
+        <div class="sub" id="plDayNote" style="margin-bottom:6px"></div>
+        <div class="tw" style="max-height:640px"><table class="t" id="plTable"></table></div>
+        <div class="row" style="margin-top:10px"><button class="btn sm" onclick="exportPlans()">⬇ ส่งออกแผน (CSV)</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="v-history" class="hide">
+    <div class="row">
+      <div><h2>ประวัติการนับ</h2><div class="sub">สรุปต่อเอกสาร PI (Phys. Inventory Doc.) × Sloc จาก MI24 และบันทึกด้วยมือ</div></div>
+      <div class="spacer"></div>
+      <button class="btn" onclick="exportHistory()">⬇ ส่งออก CSV</button>
+      <button class="btn pri" onclick="openCountModal()">+ บันทึกผลนับ (manual)</button>
+    </div>
+    <div class="panel" style="margin-top:12px">
+      <div class="row">
+        <select id="hZone"><option value="">ทุกโซน</option></select>
+        <input type="text" id="hSloc" placeholder="Sloc / PI Doc / ผู้นับ" style="width:180px">
+        <label class="f">ตั้งแต่<input type="date" id="hFrom"></label>
+        <label class="f">ถึง<input type="date" id="hTo"></label>
+        <select id="hFlag"><option value="">ทุกรายการ</option><option value="diff">มีผลต่าง</option><option value="partial">นับยังไม่ครบ</option></select>
+        <div class="spacer"></div><span class="sub" id="hCount"></span>
+      </div>
+      <div class="statline" id="hStats"></div>
+      <div class="tw"><table class="t" id="hTable"></table></div>
+    </div>
+  </section>
+
+  <!-- IMPORT -->
+  <section id="v-import" class="hide">
+    <h2>นำเข้าผลนับจาก SAP MI24</h2>
+    <div class="sub">ไฟล์ .xlsx ที่ Export จาก MI24 (คอลัมน์ Phys. Inventory Doc., Storage location, Physical Inventory Status, Book Quantity, Qty Counted, Difference Quantity, Counted By, Count Date) · นำเข้าซ้ำได้ ระบบจะอัปเดตเอกสารเดิม</div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="panel">
+        <div class="drop" id="drop">
+          <div style="font-size:30px">📄</div>
+          <b>ลากไฟล์ MI24 มาวางที่นี่</b><div class="sub">หรือคลิกเพื่อเลือกไฟล์</div>
+          <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hide">
+        </div>
+        <div id="impPreview" style="margin-top:14px"></div>
+      </div>
+      <div class="panel">
+        <h3>ตั้งค่า</h3>
+        <label class="f">รอบการนับเป้าหมาย (วัน) — ใช้แจ้งเตือน Sloc ที่ไม่ได้นับนานเกิน<input type="number" id="cfgCycle" min="1" style="width:120px"></label>
+        <label class="f" style="margin-top:10px">ความสามารถนับต่อวัน (จำนวนรายการ/วัน) — ใช้จัดแผนอัตโนมัติ<input type="number" id="cfgCap" min="10" style="width:120px"></label>
+        <label class="f" style="margin-top:10px">เดือนเริ่มต้นปี (สำหรับแบ่งไตรมาส)<select id="cfgFy" style="width:160px"></select></label>
+        <label class="f" style="margin-top:10px">รายชื่อผู้นับ (คั่นด้วย ,)<input type="text" id="cfgPeople"></label>
+        <div class="row" style="margin-top:10px"><button class="btn pri" onclick="saveConfig()">บันทึกตั้งค่า</button></div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+        <h3>รายชื่อ Sloc &amp; โซน</h3>
+        <div class="sub" style="margin-bottom:8px">โซนกำหนดอัตโนมัติจากตัวอักษรที่ 2 ของรหัส (EAC0 → A) แก้ไขโซน/คำอธิบายได้ที่นี่ หรือเพิ่ม Sloc ที่ยังไม่มีในประวัติ</div>
+        <div class="row" style="margin-bottom:8px">
+          <input type="text" id="newSloc" placeholder="รหัส เช่น EAE0" style="width:120px">
+          <select id="newSlocZone"></select>
+          <input type="text" id="newSlocDesc" placeholder="คำอธิบาย (ไม่บังคับ)" style="flex:1;min-width:120px">
+          <button class="btn sm" onclick="addSloc()">เพิ่ม</button>
+        </div>
+        <div class="tw" style="max-height:360px"><table class="t" id="slocTable"></table></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer"></aside>
+<div class="modal-bg" id="modalBg" onclick="closeModal()"></div>
+<div class="modal" id="modal"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= utilities ================= */
+const ZONES = "ABCDEFGHIJKL".split("");
+const OTHER = "อื่นๆ";
+const EXTRA = ["R","S","M","P","SP"];   // EWR* = R, SWR* = S, MWR* = M, PWR* = P, EWS* = Spare part
+const GROUPS = [...ZONES, ...EXTRA];
+function autoZone(code){
+  const c = String(code||"").toUpperCase();
+  if (/^EWS/.test(c)) return "SP";
+  if (/^EWR/.test(c)) return "R";
+  const w = /^([SMP])WR/.exec(c); if (w) return w[1];
+  const m = /^E([A-L])/.exec(c); return m ? m[1] : OTHER;
+}
+const zoneName = z => z==="SP" ? "Spare part" : z===OTHER ? "Sloc อื่นๆ" : "Zone "+z;
+const zoneIdx = z => { const i = GROUPS.indexOf(z); return i<0 ? 99 : i; };
+const TH_MON = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const TH_MON_FULL = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const TH_DOW = ["อา","จ","อ","พ","พฤ","ศ","ส"];
+const PLAN_ST = {planned:"วางแผน",inprogress:"กำลังนับ",done:"เสร็จแล้ว",cancelled:"ยกเลิก",late:"เลยกำหนด"};
+const TYPE_LBL = {cycle:"Cycle count",full:"นับทั้ง Sloc",recount:"นับซ้ำ/ตรวจผลต่าง",annual:"นับประจำปี"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parseYmd = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
+const todayStr = () => ymd(new Date());
+const addDays = (s,n) => { const d=parseYmd(s); d.setDate(d.getDate()+n); return ymd(d); };
+const daysBetween = (a,b) => Math.round((parseYmd(b)-parseYmd(a))/864e5);
+const fmtD = s => { if(!s) return "–"; const d=parseYmd(s); return d.getDate()+" "+TH_MON[d.getMonth()]+" "+String(d.getFullYear()+543).slice(2); };
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const num = v => { const n = Number(String(v??"").replace(/,/g,"")); return isFinite(n)?n:0; };
+function toast(msg, ms=2600){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("on"),ms); }
+
+function zoneOf(code){
+  const o = S.slocs[code];
+  if (o && o.zone) return o.zone;
+  return autoZone(code);
+}
+
+/* ================= state & storage ================= */
+const S = { counts:{}, plans:{}, slocs:{}, config:{ cycleDays:30, capacity:300, people:"" } };
+const COLS = ["counts","plans","slocs"];
+const LS_KEY = "stockcount-plan.v1";
+/* Store: คุยกับ server (/api/state, /api/write) • ข้อมูลกลางของทีม • ดึงการเปลี่ยนแปลงทุก 15 วินาที */
+const Store = {
+  mode:"loading", since:0, readOnly:false, pinRequired:false, timer:null, failing:0,
+  async init(){
+    try { await this.pull(); }
+    catch(e){ this.mode = "local"; this.loadLocal(); setSync("warn","เชื่อมต่อ server ไม่ได้ — ใช้ข้อมูลในเครื่องนี้"); renderAll(); return; }
+    this.mode = "api";
+    this.timer = setInterval(()=>this.pull().catch(()=>{}), 15000);
+    document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) this.pull().catch(()=>{}); });
+  },
+  async pull(){
+    let r;
+    try { r = await fetch("/api/state?since="+this.since, {cache:"no-store"}); if (!r.ok) throw new Error("HTTP "+r.status); r = await r.json(); }
+    catch(e){ if (this.mode==="api") { this.failing++; if (this.failing>=2) setSync("warn","ขาดการเชื่อมต่อ server — กำลังลองใหม่"); } throw e; }
+    this.failing = 0;
+    this.pinRequired = !!r.pinRequired;
+    let changed = false;
+    for (const d of r.docs) {
+      if (d.col === "config") { if (!d.deleted && d.id === "main") { S.config = Object.assign({cycleDays:30,capacity:300,people:"",fyStart:1}, d.data); changed = true; } continue; }
+      if (!S[d.col]) continue;
+      if (d.deleted) { if (S[d.col][d.id]) { delete S[d.col][d.id]; changed = true; } }
+      else if (JSON.stringify(S[d.col][d.id]) !== JSON.stringify(d.data)) { S[d.col][d.id] = d.data; changed = true; }
+    }
+    this.since = Math.max(0, r.now - 5000);
+    setSync("ok", "ข้อมูลกลางของทีม · อัปเดต "+new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}) + (this.pinRequired && !getPin() ? " · ดูอย่างเดียว" : ""));
+    if (changed || r.docs.length===0) scheduleRender();
+  },
+  loadLocal(){
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) { const o = JSON.parse(raw); for (const k of [...COLS,"config"]) if (o[k]) S[k]=o[k]; } } catch(e){}
+  },
+  saveLocal(){ try { localStorage.setItem(LS_KEY, JSON.stringify({counts:S.counts,plans:S.plans,slocs:S.slocs,config:S.config})); } catch(e){} },
+  async send(ops){
+    if (this.mode !== "api") { this.saveLocal(); return; }
+    for (let attempt=0; attempt<2; attempt++) {
+      if (this.pinRequired && !getPin()) { const ok = await askPin(); if (!ok) throw {code:"no_pin"}; }
+      let r;
+      try { r = await fetch("/api/write", {method:"POST", headers:{"Content-Type":"application/json","X-Edit-Pin":getPin()}, body:JSON.stringify({ops})}); }
+      catch(e){ toast("ส่งข้อมูลไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต"); throw {code:"network"}; }
+      if (r.status === 401) { setPin(""); this.pinRequired = true; const ok = await askPin("PIN ไม่ถูกต้อง หรือยังไม่ได้ใส่"); if (!ok) throw {code:"no_pin"}; continue; }
+      if (!r.ok) { const j = await r.json().catch(()=>({})); toast("บันทึกไม่สำเร็จ: "+(j.error||r.status)); throw {code:"server", message:j.error}; }
+      return r.json();
+    }
+    throw {code:"no_pin"};
+  },
+  async put(col, id, data){ S[col][id] = data; scheduleRender(); await this.send([{op:"set", col, id, data}]); },
+  async putMany(col, entries, onProgress){
+    for (const [id,d] of entries) S[col][id] = d;
+    scheduleRender();
+    for (let i=0;i<entries.length;i+=250) {
+      await this.send(entries.slice(i,i+250).map(([id,data])=>({op:"set", col, id, data})));
+      if (onProgress) onProgress(Math.min(entries.length, i+250));
+    }
+  },
+  async del(col, id){ delete S[col][id]; scheduleRender(); await this.send([{op:"delete", col, id}]); },
+  async putConfig(cfg){ S.config = cfg; scheduleRender(); await this.send([{op:"set", col:"config", id:"main", data:cfg}]); }
+};
+const PIN_KEY = "stockcount.pin";
+function getPin(){ try { return localStorage.getItem(PIN_KEY) || ""; } catch(e){ return Store._pin || ""; } }
+function setPin(v){ Store._pin = v; try { v ? localStorage.setItem(PIN_KEY, v) : localStorage.removeItem(PIN_KEY); } catch(e){} }
+function askPin(msg){
+  return new Promise(resolve => {
+    openModal(`<div class="row"><h2>ใส่ PIN สำหรับแก้ไข</h2><div class="spacer"></div><button class="x" id="pinX">×</button></div>
+      <div class="sub">${esc(msg||"ระบบนี้ตั้ง PIN ไว้ ต้องใส่ PIN ก่อนวางแผน แก้ไข หรือนำเข้าข้อมูล (ดูอย่างเดียวไม่ต้องใส่)")}</div>
+      <div class="row" style="margin-top:12px"><input type="password" id="pinIn" inputmode="numeric" autocomplete="off" style="width:180px"><button class="btn pri" id="pinOk">ตกลง</button></div>
+      <div class="sub" id="pinErr" style="color:var(--late);margin-top:6px"></div>`);
+    const done = v => { closeModal(); resolve(v); };
+    $("#pinX").onclick = () => done(false);
+    const ok = async () => {
+      const v = $("#pinIn").value.trim(); if (!v) return;
+      const r = await fetch("/api/pin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:v})}).catch(()=>null);
+      if (r && r.ok) { setPin(v); done(true); toast("ปลดล็อกการแก้ไขแล้ว"); Store.pull().catch(()=>{}); }
+      else $("#pinErr").textContent = "PIN ไม่ถูกต้อง";
+    };
+    $("#pinOk").onclick = ok; $("#pinIn").onkeydown = e => { if (e.key==="Enter") ok(); };
+    setTimeout(()=>$("#pinIn").focus(), 50);
+  });
+}
+function setSync(cls, text){ const el=$("#sync"); el.className="syncnote "+cls; el.querySelector("span").textContent=text; }
+function showBanner(t){ $("#banner").innerHTML = '<div class="banner">'+esc(t)+'</div>'; }
+let _rq = 0; function scheduleRender(){ cancelAnimationFrame(_rq); _rq = requestAnimationFrame(renderAll); }
+
+/* ================= derived data ================= */
+function period(){ return { from: $("#pFrom").value, to: $("#pTo").value }; }
+function planStatus(p){
+  if (p.status === "planned" && p.date < todayStr()) return "late";
+  return p.status || "planned";
+}
+function allSlocCodes(){
+  const set = new Set(Object.keys(S.slocs));
+  for (const c of Object.values(S.counts)) if (c.sloc) set.add(c.sloc);
+  for (const p of Object.values(S.plans)) if (p.sloc) set.add(p.sloc);
+  return [...set].sort();
+}
+function slocInfo(){
+  const {from,to} = period();
+  const cyc = Number(S.config.cycleDays)||30;
+  const today = todayStr();
+  const map = {};
+  for (const code of allSlocCodes()) map[code] = { code, zone: zoneOf(code), desc:(S.slocs[code]||{}).desc||"", counts:[], plans:[], last:null, lastItems:0 };
+  for (const c of Object.values(S.counts)) {
+    const m = map[c.sloc]; if (!m) continue; m.counts.push(c);
+  }
+  for (const [id,p] of Object.entries(S.plans)) { const m = map[p.sloc]; if (m) m.plans.push(Object.assign({id},p)); }
+  for (const m of Object.values(map)) {
+    m.counts.sort((a,b)=> (b.lastDate||"").localeCompare(a.lastDate||""));
+    m.plans.sort((a,b)=> a.date.localeCompare(b.date));
+    const dated = m.counts.filter(c=>c.lastDate);
+    m.last = dated.length ? dated[0].lastDate : null;
+    // estimated item size: largest single count, or sum of counts on the last date
+    m.lastItems = dated.length ? dated.filter(c=>c.lastDate===m.last).reduce((s,c)=>s+(c.items||0),0) : 0;
+    m.sizeEst = Math.max(m.lastItems, ...m.counts.map(c=>c.items||0), 0) || 20;
+    m.age = m.last ? daysBetween(m.last, today) : null;
+    const inP = m.counts.filter(c => c.lastDate && c.lastDate >= from && c.lastDate <= to || (!c.lastDate && c.firstDate && c.firstDate>=from && c.firstDate<=to) || (!c.lastDate && c.notCounted>0 && (c.importedAt||"").slice(0,10) >= from));
+    m.inPeriod = inP;
+    m.partialInP = inP.some(c => (c.notCounted||0) > 0);
+    m.diffInP = inP.reduce((s,c)=>s+(c.diffItems||0),0);
+    m.plansInP = m.plans.filter(p => p.date >= from && p.date <= to && p.status !== "cancelled");
+    m.nextPlan = m.plans.find(p => p.status !== "cancelled" && p.status !== "done" && p.date >= today) || null;
+    m.overdue = m.age === null || m.age > cyc;
+    let st;
+    if (inP.length && !m.partialInP) st = "done";
+    else if (m.partialInP) st = "partial";
+    else if (m.plansInP.some(p => planStatus(p)==="late")) st = "late";
+    else if (m.plansInP.length) st = "planned";
+    else st = "none";
+    m.status = st;
+  }
+  return map;
+}
+
+/* ================= router ================= */
+const VIEWS = ["overview","quarter","plan","history","import"];
+function route(){
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "overview";
+  for (const x of VIEWS) $("#v-"+x).classList.toggle("hide", x!==v);
+  document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on", a.dataset.v===v));
+  renderAll();
+}
+window.addEventListener("hashchange", route);
+function curView(){ const v=location.hash.slice(1); return VIEWS.includes(v)?v:"overview"; }
+
+function renderAll(){
+  fillZoneSelects();
+  const v = curView();
+  if (v==="overview") renderOverview();
+  if (v==="plan") renderPlan();
+  if (v==="quarter") renderQuarter();
+  if (v==="history") renderHistory();
+  if (v==="import") renderImportSide();
+  if ($("#drawer").classList.contains("on") && $("#drawer").dataset.code) renderDrawer($("#drawer").dataset.code);
+}
+function zoneList(){
+  const codes = allSlocCodes(); const hasOther = codes.some(c => zoneOf(c)===OTHER);
+  return hasOther ? [...GROUPS, OTHER] : GROUPS;
+}
+function fillZoneSelects(){
+  const zl = zoneList();
+  for (const id of ["#calZone","#hZone","#qZone"]) {
+    const el=$(id), v=el.value;
+    el.innerHTML = '<option value="">ทุกโซน</option>' + zl.map(z=>`<option value="${esc(z)}">${zoneName(z)}</option>`).join("");
+    el.value = v;
+  }
+  const nz=$("#newSlocZone"), nv=nz.value;
+  nz.innerHTML = [...GROUPS,OTHER].map(z=>`<option value="${esc(z)}">${zoneName(z)}</option>`).join(""); if(nv) nz.value=nv;
+}
+
+/* ================= overview ================= */
+function renderOverview(){
+  const info = slocInfo(); const list = Object.values(info);
+  const q = $("#ovSearch").value.trim().toUpperCase();
+  const cnt = s => list.filter(m=>m.status===s).length;
+  const cyc = Number(S.config.cycleDays)||30;
+  const diffTotal = list.reduce((s,m)=>s+m.diffInP,0);
+  const overdueNoPlan = list.filter(m=>m.overdue && !m.nextPlan && m.status!=="done").length;
+  const pct = list.length ? Math.round(cnt("done")/list.length*100) : 0;
+  $("#kpis").innerHTML = `
+    <div class="kpi"><b>${list.length}</b><span>Sloc ทั้งหมด</span></div>
+    <div class="kpi done"><b>${cnt("done")} <small style="font-size:14px;color:var(--muted)">(${pct}%)</small></b><span>นับครบแล้วในรอบนี้</span></div>
+    <div class="kpi partial"><b>${cnt("partial")}</b><span>นับยังไม่ครบ (Not Yet Counted)</span></div>
+    <div class="kpi plan"><b>${cnt("planned")+cnt("late")}</b><span>มีแผนแล้ว${cnt("late")?` · <b style="display:inline;font-size:13px;color:var(--late)">เลยกำหนด ${cnt("late")}</b>`:""}</span></div>
+    <div class="kpi late"><b>${overdueNoPlan}</b><span>ไม่ได้นับเกิน ${cyc} วัน &amp; ยังไม่มีแผน</span></div>
+    <div class="kpi"><b>${diffTotal}</b><span>รายการที่มีผลต่างในรอบนี้</span></div>`;
+  const byZone = {};
+  for (const m of list) (byZone[m.zone] ||= []).push(m);
+  const order = zoneList();
+  $("#zones").innerHTML = order.map(z => {
+    let ms = (byZone[z]||[]);
+    if (q) ms = ms.filter(m => m.code.includes(q) || (m.desc||"").toUpperCase().includes(q));
+    if (q && !ms.length) return "";
+    const tot = (byZone[z]||[]).length;
+    const c = s => (byZone[z]||[]).filter(m=>m.status===s).length;
+    const seg = (s,col) => tot ? `<span style="width:${c(s)/tot*100}%;background:${col}"></span>` : "";
+    const chips = ms.length ? ms.map(m => {
+      const age = m.age===null ? "ยังไม่เคยนับ" : (m.age===0?"วันนี้":m.age+" วันก่อน");
+      const extra = m.status==="planned"||m.status==="late" ? (m.plansInP[0] ? " · แผน "+fmtD(m.plansInP[0].date) : "") : "";
+      return `<div class="chip ${m.status}" onclick="openDrawer('${esc(m.code)}')" title="${esc(m.desc)}"><span class="c">${esc(m.code)}</span><small>${age}${extra}</small></div>`;
+    }).join("") : `<span class="sub">ยังไม่มี Sloc — เพิ่มได้ที่หน้า “นำเข้า / ตั้งค่า”</span>`;
+    return `<div class="zone">
+      <div class="zh"><div class="zl ${z.length>1||z===OTHER?"other":""}">${z===OTHER?"อื่น":z}</div>
+        <div class="zt"><b>${zoneName(z)}</b> <b class="zpct" style="float:right;color:${pctColor(tot?c("done")/tot*100:0)}">${tot?Math.round(c("done")/tot*100)+"%":"–"}</b><div class="sub">${tot} Sloc · นับครบ ${c("done")} · มีแผน ${c("planned")+c("late")} · เหลือ ${c("none")}</div></div>
+        <button class="btn sm" onclick="openPlanModal({zone:'${esc(z)}'})">+ แผน</button></div>
+      <div class="bar">${seg("done","var(--done)")}${seg("partial","var(--partial)")}${seg("planned","var(--plan)")}${seg("late","var(--late)")}</div>
+      <div class="chips">${chips}</div></div>`;
+  }).join("");
+}
+function setQuick(q){
+  const d = new Date(); let a,b;
+  if (q==="month"){ a=new Date(d.getFullYear(),d.getMonth(),1); b=new Date(d.getFullYear(),d.getMonth()+1,0); }
+  if (q==="quarter"){ const c=currentQ(); const r=qRange(c.fy,c.q); a=parseYmd(r.from); b=parseYmd(r.to); }
+  if (q==="year"){ const c=currentQ(); a=parseYmd(qRange(c.fy,1).from); b=parseYmd(qRange(c.fy,4).to); }
+  $("#pFrom").value=ymd(a); $("#pTo").value=ymd(b);
+  document.querySelectorAll("#pQuick button").forEach(x=>x.classList.toggle("on",x.dataset.q===q));
+  try{ localStorage.setItem(LS_KEY+".period", q); }catch(e){}
+  renderAll();
+}
+
+/* ================= drawer (sloc detail) ================= */
+function openDrawer(code){ const d=$("#drawer"); d.dataset.code=code; renderDrawer(code); d.classList.add("on"); $("#drawerBg").classList.add("on"); }
+function closeDrawer(){ $("#drawer").classList.remove("on"); $("#drawerBg").classList.remove("on"); $("#drawer").dataset.code=""; }
+function renderDrawer(code){
+  const m = slocInfo()[code]; if (!m) { closeDrawer(); return; }
+  const stLbl = {done:"นับครบแล้วในรอบ",partial:"นับยังไม่ครบ",planned:"มีแผนแล้ว",late:"เลยกำหนดแผน",none:"ยังไม่นับ/ไม่มีแผน"}[m.status];
+  const counters = [...new Set(m.counts.flatMap(c=>c.counters||[]))];
+  $("#drawer").innerHTML = `
+    <div class="row"><div><div class="sub">${zoneName(m.zone)}</div><h2 class="mono" style="font-size:24px">${esc(code)}</h2>
+      <div class="sub">${esc(m.desc)||"–"}</div></div><div class="spacer"></div><button class="x" onclick="closeDrawer()">×</button></div>
+    <div style="margin:10px 0"><span class="st ${m.status}">${stLbl}</span></div>
+    <div class="statline">
+      <div>นับล่าสุด<b>${fmtD(m.last)}</b></div>
+      <div>ผ่านมา<b>${m.age===null?"–":m.age+" วัน"}</b></div>
+      <div>จำนวนรายการ (ประมาณ)<b>${m.sizeEst}</b></div>
+      <div>นับทั้งหมด<b>${m.counts.length} ครั้ง</b></div>
+    </div>
+    ${counters.length?`<div class="sub" style="margin-bottom:10px">ผู้นับที่เคยนับ: ${counters.map(esc).join(", ")}</div>`:""}
+    <div class="row" style="margin-bottom:16px">
+      <button class="btn pri" onclick="openPlanModal({slocs:['${esc(code)}']})">+ วางแผนนับ</button>
+      <button class="btn" onclick="openCountModal({sloc:'${esc(code)}'})">+ บันทึกผลนับ</button>
+    </div>
+    <h3>แผนการนับ</h3>
+    ${m.plans.length?`<div class="tw" style="max-height:220px"><table class="t"><tr><th>วันที่</th><th>ประเภท</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th><th></th></tr>
+      ${m.plans.slice().reverse().map(p=>`<tr><td>${fmtD(p.date)}</td><td>${esc(TYPE_LBL[p.type]||p.type)}</td><td>${esc(p.assignee)}</td><td><span class="st ${planStatus(p)}">${PLAN_ST[planStatus(p)]}</span></td><td><button class="btn sm" onclick="openPlanEdit('${p.id}')">แก้ไข</button></td></tr>`).join("")}</table></div>`:`<div class="sub">ยังไม่มีแผน</div>`}
+    <h3 style="margin-top:18px">ประวัติการนับ</h3>
+    ${m.counts.length?`<div class="tw" style="max-height:340px"><table class="t"><tr><th>วันที่นับ</th><th>PI Doc</th><th class="n">รายการ</th><th class="n">ยังไม่นับ</th><th class="n">ผลต่าง</th><th>ผู้นับ</th></tr>
+      ${m.counts.map(c=>`<tr><td>${fmtD(c.lastDate)}${c.firstDate&&c.firstDate!==c.lastDate?`<div class="sub">เริ่ม ${fmtD(c.firstDate)}</div>`:""}</td><td class="mono">${esc(c.doc||"manual")}</td><td class="n">${c.items||0}</td><td class="n">${c.notCounted?`<span class="st partial">${c.notCounted}</span>`:"0"}</td><td class="n">${c.diffItems?`<span class="st late">${c.diffItems}</span>`:"0"}</td><td>${esc((c.counters||[]).join(", "))}</td></tr>`).join("")}</table></div>`:`<div class="sub">ยังไม่มีประวัติ</div>`}
+    ${m.counts.some(c=>c.diffs&&c.diffs.length)?`<h3 style="margin-top:18px">รายการที่มีผลต่าง</h3><div class="tw" style="max-height:260px"><table class="t"><tr><th>วันที่</th><th>Material</th><th>Batch</th><th class="n">Book</th><th class="n">นับได้</th><th class="n">ต่าง</th></tr>
+      ${m.counts.flatMap(c=>(c.diffs||[]).map(x=>`<tr><td>${fmtD(c.lastDate)}</td><td><span class="mono">${esc(x.mat)}</span><div class="sub">${esc(x.desc)}</div></td><td>${esc(x.batch)}</td><td class="n">${x.book}</td><td class="n">${x.qty}</td><td class="n" style="color:var(--late)">${x.diff}</td></tr>`)).join("")}</table></div>`:""}
+  `;
+}
+
+/* ================= modal: plan create/edit ================= */
+function openModal(html){ $("#modal").innerHTML=html; $("#modal").classList.add("on"); $("#modalBg").classList.add("on"); }
+function closeModal(){ $("#modal").classList.remove("on"); $("#modalBg").classList.remove("on"); }
+function peopleOptions(sel){
+  const ppl = (S.config.people||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const fromHist = [...new Set(Object.values(S.counts).flatMap(c=>c.counters||[]))];
+  const all = [...new Set([...ppl,...fromHist])].sort();
+  return `<datalist id="ppl">${all.map(p=>`<option value="${esc(p)}">`).join("")}</datalist>`;
+}
+function openPlanModal(pre={}){
+  const info = slocInfo();
+  const zones = zoneList();
+  const z0 = pre.zone || (pre.slocs&&pre.slocs[0] ? zoneOf(pre.slocs[0]) : zones[0]);
+  openModal(`
+    <div class="row"><h2>วางแผนการนับ</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="fgrid">
+      <label class="f">วันที่นับ<input type="date" id="pmDate" value="${pre.date||addDays(todayStr(),1)}"></label>
+      <label class="f">ประเภท<select id="pmType">${Object.entries(TYPE_LBL).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></label>
+      <label class="f">ผู้รับผิดชอบ<input type="text" id="pmWho" list="ppl" placeholder="เช่น AMPHA.PH">${peopleOptions()}</label>
+    </div>
+    <div class="row" style="margin-bottom:6px">
+      <label class="f">โซน<select id="pmZone">${zones.map(z=>`<option value="${esc(z)}" ${z===z0?"selected":""}>${zoneName(z)}</option>`).join("")}</select></label>
+      <div class="spacer"></div>
+      <button class="btn sm" id="pmAll">เลือกที่ยังไม่นับ/ไม่มีแผน</button>
+      <button class="btn sm" id="pmNone">ล้าง</button>
+    </div>
+    <div class="picklist" id="pmList"></div>
+    <div class="sub" id="pmSum" style="margin-top:6px"></div>
+    <label class="f" style="margin-top:10px">หมายเหตุ<textarea id="pmNote" placeholder="เช่น นับเฉพาะชั้น 1-3, ร่วมกับฝ่ายบัญชี"></textarea></label>
+    <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="pmSave">บันทึกแผน</button></div>`);
+  const selected = new Set(pre.slocs||[]);
+  const drawList = () => {
+    const z = $("#pmZone").value;
+    const ms = Object.values(info).filter(m=>m.zone===z).sort((a,b)=>(a.age??1e9)<(b.age??1e9)?1:-1);
+    $("#pmList").innerHTML = ms.length ? ms.map(m=>`<label><input type="checkbox" value="${esc(m.code)}" ${selected.has(m.code)?"checked":""}><span class="c">${esc(m.code)}</span>
+      <span class="st ${m.status}" style="min-width:74px;text-align:center">${{done:"นับแล้ว",partial:"ไม่ครบ",planned:"มีแผน",late:"เลยกำหนด",none:"ยังไม่นับ"}[m.status]}</span>
+      <span class="sub" style="flex:1">ล่าสุด ${fmtD(m.last)}${m.age!==null?` (${m.age} วัน)`:""} · ~${m.sizeEst} รายการ${m.nextPlan?` · แผนถัดไป ${fmtD(m.nextPlan.date)}`:""}</span></label>`).join("") : `<div class="empty">ไม่มี Sloc ในโซนนี้</div>`;
+    $("#pmList").querySelectorAll("input").forEach(i=>i.onchange=()=>{ i.checked?selected.add(i.value):selected.delete(i.value); sum(); });
+    sum();
+  };
+  const sum = () => { const items=[...selected].reduce((s,c)=>s+(info[c]?info[c].sizeEst:20),0); $("#pmSum").textContent = selected.size ? `เลือก ${selected.size} Sloc · ประมาณ ${items} รายการ (${[...selected].join(", ")})` : "ยังไม่ได้เลือก Sloc"; };
+  $("#pmZone").onchange = drawList;
+  $("#pmAll").onclick = () => { Object.values(info).filter(m=>m.zone===$("#pmZone").value && m.status==="none").forEach(m=>selected.add(m.code)); drawList(); };
+  $("#pmNone").onclick = () => { selected.clear(); drawList(); };
+  $("#pmSave").onclick = async () => {
+    if (!selected.size) return toast("กรุณาเลือก Sloc อย่างน้อย 1 รายการ");
+    const date=$("#pmDate").value; if(!date) return toast("กรุณาระบุวันที่");
+    const base = { date, type:$("#pmType").value, assignee:$("#pmWho").value.trim(), note:$("#pmNote").value.trim(), status:"planned", createdAt:new Date().toISOString() };
+    closeModal();
+    try { for (const c of selected) await Store.put("plans", uid(), Object.assign({sloc:c, zone:zoneOf(c)}, base)); toast(`บันทึกแผน ${selected.size} Sloc แล้ว`); }
+    catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
+  drawList();
+}
+function openPlanEdit(id){
+  const p = S.plans[id]; if (!p) return;
+  openModal(`
+    <div class="row"><h2>แก้ไขแผน <span class="mono">${esc(p.sloc)}</span></h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="fgrid">
+      <label class="f">วันที่นับ<input type="date" id="peDate" value="${esc(p.date)}"></label>
+      <label class="f">ประเภท<select id="peType">${Object.entries(TYPE_LBL).map(([k,v])=>`<option value="${k}" ${p.type===k?"selected":""}>${v}</option>`).join("")}</select></label>
+      <label class="f">ผู้รับผิดชอบ<input type="text" id="peWho" list="ppl" value="${esc(p.assignee)}">${peopleOptions()}</label>
+      <label class="f">สถานะ<select id="peSt">${["planned","inprogress","done","cancelled"].map(k=>`<option value="${k}" ${p.status===k?"selected":""}>${PLAN_ST[k]}</option>`).join("")}</select></label>
+    </div>
+    <label class="f">หมายเหตุ<textarea id="peNote">${esc(p.note)}</textarea></label>
+    <div class="row" style="margin-top:12px"><button class="btn danger" id="peDel">ลบแผน</button><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="peSave">บันทึก</button></div>`);
+  $("#peSave").onclick = async () => {
+    const np = Object.assign({}, p, { date:$("#peDate").value, type:$("#peType").value, assignee:$("#peWho").value.trim(), status:$("#peSt").value, note:$("#peNote").value.trim(), updatedAt:new Date().toISOString() });
+    closeModal(); try { await Store.put("plans", id, np); toast("บันทึกแล้ว"); } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
+  let armed=false;
+  $("#peDel").onclick = async () => {
+    if (!armed){ armed=true; $("#peDel").textContent="กดอีกครั้งเพื่อยืนยันการลบ"; return; }
+    closeModal(); try { await Store.del("plans", id); toast("ลบแผนแล้ว"); } catch(e){ toast("ลบไม่สำเร็จ"); }
+  };
+}
+async function setPlanStatus(id, st){
+  const p = S.plans[id]; if (!p || p.status===st) return;
+  try { await Store.put("plans", id, Object.assign({}, p, {status:st, updatedAt:new Date().toISOString()})); } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+}
+
+/* ================= auto plan ================= */
+function openAutoModal(){
+  const zones = zoneList();
+  const start = addDays(todayStr(),1);
+  openModal(`
+    <div class="row"><h2>⚡ จัดแผนอัตโนมัติ</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="sub">เลือก Sloc ที่ <b>ยังไม่นับในรอบ</b> และ <b>ยังไม่มีแผน</b> แล้วกระจายลงวันทำงาน โดยเรียงตามโซน (ให้ทีมนับโซนเดียวกันต่อเนื่อง) และ Sloc ที่ไม่ได้นับนานที่สุดก่อน · จำนวนรายการต่อ Sloc ประมาณจากการนับครั้งก่อน</div>
+    <div class="fgrid">
+      <label class="f">เริ่มวันที่<input type="date" id="amFrom" value="${start}"></label>
+      <label class="f">ไม่เกินวันที่<input type="date" id="amTo" value="${$("#pTo").value||addDays(start,30)}"></label>
+      <label class="f">ความสามารถนับ (รายการ/วัน)<input type="number" id="amCap" value="${Number(S.config.capacity)||300}"></label>
+      <label class="f">ผู้รับผิดชอบ<input type="text" id="amWho" list="ppl">${peopleOptions()}</label>
+    </div>
+    <div class="row" style="margin-bottom:8px"><label><input type="checkbox" id="amWe" checked> ข้ามเสาร์-อาทิตย์</label>
+      <label><input type="checkbox" id="amOverdue"> เฉพาะที่ไม่ได้นับเกิน ${Number(S.config.cycleDays)||30} วัน</label></div>
+    <div class="sub" style="margin-bottom:4px">โซนที่ต้องการ</div>
+    <div class="chips" id="amZones">${zones.map(z=>`<label class="st none" style="cursor:pointer;padding:4px 10px"><input type="checkbox" value="${esc(z)}" checked> ${z==="SP"?"Spare part":z}</label>`).join("")}</div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="amGo">ดูตัวอย่างแผน</button><div class="spacer"></div><span class="sub" id="amSum"></span></div>
+    <div id="amPrev" style="margin-top:10px"></div>
+    <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="amSave" disabled>สร้างแผนทั้งหมด</button></div>`);
+  let draft = [];
+  $("#amGo").onclick = () => {
+    const info = slocInfo(); const cap = Math.max(10, num($("#amCap").value));
+    const zs = new Set([...document.querySelectorAll("#amZones input:checked")].map(i=>i.value));
+    const cyc = Number(S.config.cycleDays)||30;
+    let pool = Object.values(info).filter(m => zs.has(m.zone) && m.status==="none" && !m.nextPlan && (!$("#amOverdue").checked || m.age===null || m.age>cyc));
+    const zi = zoneIdx;
+    pool.sort((a,b)=> zi(a.zone)-zi(b.zone) || (b.age??1e9)-(a.age??1e9) || a.code.localeCompare(b.code));
+    draft = []; let d = $("#amFrom").value; const end = $("#amTo").value; let load = 0; let left = [];
+    const nextWork = s => { let x=s; while($("#amWe").checked && [0,6].includes(parseYmd(x).getDay())) x=addDays(x,1); return x; };
+    d = nextWork(d);
+    for (const m of pool) {
+      if (load>0 && load + m.sizeEst > cap) { d = nextWork(addDays(d,1)); load = 0; }
+      if (d > end) { left.push(m); continue; }
+      draft.push({ sloc:m.code, zone:m.zone, date:d, est:m.sizeEst, age:m.age }); load += m.sizeEst;
+    }
+    const days = [...new Set(draft.map(x=>x.date))];
+    $("#amSum").textContent = `${draft.length} Sloc · ${days.length} วัน` + (left.length?` · ไม่พอวัน ${left.length} Sloc`:"");
+    $("#amPrev").innerHTML = draft.length ? `<div class="tw" style="max-height:300px"><table class="t"><tr><th>วันที่</th><th>Sloc</th><th class="n">~รายการ/วัน</th></tr>
+      ${days.map(dd=>{ const r=draft.filter(x=>x.date===dd); return `<tr><td>${TH_DOW[parseYmd(dd).getDay()]} ${fmtD(dd)}</td><td>${r.map(x=>`<span class="mono">${esc(x.sloc)}</span>`).join(", ")}</td><td class="n">${r.reduce((s,x)=>s+x.est,0)}</td></tr>`; }).join("")}</table></div>
+      ${left.length?`<div class="banner" style="margin-top:8px">ไม่พอวันสำหรับ: ${left.map(m=>esc(m.code)).join(", ")} — ขยายวันสิ้นสุดหรือเพิ่มความสามารถนับ</div>`:""}`
+      : `<div class="empty">ไม่มี Sloc ที่ต้องจัดแผน 🎉</div>`;
+    $("#amSave").disabled = !draft.length;
+  };
+  $("#amSave").onclick = async () => {
+    const who = $("#amWho").value.trim(); const n = draft.length; closeModal();
+    toast(`กำลังสร้างแผน ${n} รายการ…`, 6000);
+    try { for (const x of draft) await Store.put("plans", uid(), { sloc:x.sloc, zone:x.zone, date:x.date, type:"cycle", assignee:who, note:"จัดแผนอัตโนมัติ", status:"planned", createdAt:new Date().toISOString() }); toast(`สร้างแผน ${n} รายการแล้ว`); }
+    catch(e){ toast("สร้างแผนไม่สำเร็จบางส่วน"); }
+  };
+}
+
+/* ================= plan view ================= */
+let calMonth = (()=>{ const d=new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+let calDay = null;
+function renderPlan(){
+  const zf = $("#calZone").value;
+  $("#calTitle").textContent = TH_MON_FULL[calMonth.getMonth()]+" "+(calMonth.getFullYear()+543);
+  const first = new Date(calMonth); first.setDate(1 - first.getDay());
+  const plans = Object.entries(S.plans).map(([id,p])=>Object.assign({id},p)).filter(p=>!zf || zoneOf(p.sloc)===zf);
+  const counts = Object.values(S.counts).filter(c=>!zf || zoneOf(c.sloc)===zf);
+  const byDate = {}, actual = {};
+  for (const p of plans) (byDate[p.date] ||= []).push(p);
+  for (const c of counts) if (c.lastDate) (actual[c.lastDate] ||= new Set()).add(c.sloc);
+  const today = todayStr();
+  let html = TH_DOW.map(d=>`<div class="dh">${d}</div>`).join("");
+  const dim = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 0).getDate();
+  const cells = Math.ceil((calMonth.getDay() + dim)/7)*7;
+  for (let i=0;i<cells;i++){
+    const d = new Date(first); d.setDate(first.getDate()+i); const s=ymd(d);
+    const out = d.getMonth()!==calMonth.getMonth();
+    const ps = (byDate[s]||[]).sort((a,b)=>a.sloc.localeCompare(b.sloc));
+    const ac = actual[s] ? [...actual[s]].sort() : [];
+    const items = ps.slice(0,4).map(p=>`<div class="pc ${planStatus(p)}" title="${esc(p.sloc+" · "+(p.assignee||"")+" · "+PLAN_ST[planStatus(p)])}">${esc(p.sloc)}${p.assignee?" · "+esc(p.assignee.split(".")[0]):""}</div>`).join("")
+      + (ps.length>4?`<div class="sub" style="font-size:11px">+${ps.length-4} แผน</div>`:"")
+      + (ac.length?`<div class="pc actual" title="นับจริง: ${esc(ac.join(", "))}">นับจริง ${ac.length} Sloc</div>`:"");
+    html += `<div class="d ${out?"out":""} ${[0,6].includes(d.getDay())?"we":""} ${s===today?"today":""}" data-d="${s}"><div class="dn">${d.getDate()}${ps.length?`<em>${ps.length} แผน</em>`:""}</div>${items}</div>`;
+  }
+  $("#cal").innerHTML = html;
+  $("#cal").querySelectorAll(".d").forEach(el=>el.onclick=()=>{ calDay = (calDay===el.dataset.d)?null:el.dataset.d; renderPlan(); });
+  if (calDay) $("#cal").querySelector(`[data-d="${calDay}"]`)?.style.setProperty("background","#eef5f2");
+  // list
+  const stf = $("#plStatus").value;
+  let rows = plans.filter(p => {
+    const st = planStatus(p);
+    if (calDay) return p.date===calDay;
+    if (stf==="open") return p.status!=="done" && p.status!=="cancelled";
+    return !stf || p.status===stf || st===stf;
+  }).sort((a,b)=>a.date.localeCompare(b.date)||a.sloc.localeCompare(b.sloc));
+  $("#plTitle").textContent = calDay ? "แผนวันที่ "+fmtD(calDay) : "รายการแผน";
+  $("#plDayNote").innerHTML = calDay ? `<a href="#plan" onclick="calDay=null;renderPlan();return false">← ดูทั้งหมด</a> · <a href="#plan" onclick="openPlanModal({date:'${calDay}'});return false">+ เพิ่มแผนวันนี้</a>${actual[calDay]?` · นับจริง: ${[...actual[calDay]].map(esc).join(", ")}`:""}` : `${rows.length} รายการ`;
+  $("#plTable").innerHTML = rows.length ? `<tr><th>วันที่</th><th>Sloc</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th><th></th></tr>` + rows.map(p=>{
+    const st = planStatus(p);
+    return `<tr><td>${fmtD(p.date)}<div class="sub">${esc(TYPE_LBL[p.type]||"")}</div></td>
+      <td><a href="#plan" class="mono" onclick="openDrawer('${esc(p.sloc)}');return false">${esc(p.sloc)}</a><div class="sub">${zoneName(zoneOf(p.sloc))}${p.note?" · "+esc(p.note):""}</div></td>
+      <td>${esc(p.assignee)||'<span class="sub">–</span>'}</td>
+      <td><select onchange="setPlanStatus('${p.id}',this.value)" style="min-height:28px;padding:2px 6px;font-size:12.5px">${["planned","inprogress","done","cancelled"].map(k=>`<option value="${k}" ${p.status===k?"selected":""}>${PLAN_ST[k]}</option>`).join("")}</select>${st==="late"?`<div><span class="st late">เลยกำหนด</span></div>`:""}</td>
+      <td><button class="btn sm" onclick="openPlanEdit('${p.id}')">แก้ไข</button></td></tr>`;
+  }).join("") : `<tr><td class="empty">ไม่มีแผน</td></tr>`;
+}
+
+/* ================= history ================= */
+function historyRows(){
+  const zf=$("#hZone").value, q=$("#hSloc").value.trim().toUpperCase(), f=$("#hFrom").value, t=$("#hTo").value, fl=$("#hFlag").value;
+  return Object.entries(S.counts).map(([id,c])=>Object.assign({id},c)).filter(c=>{
+    if (zf && zoneOf(c.sloc)!==zf) return false;
+    const dt = c.lastDate || c.firstDate || "";
+    if (f && dt && dt < f) return false; if (t && dt && dt > t) return false;
+    if (q && !((c.sloc||"").includes(q) || String(c.doc||"").includes(q) || (c.counters||[]).join(",").toUpperCase().includes(q))) return false;
+    if (fl==="diff" && !c.diffItems) return false; if (fl==="partial" && !c.notCounted) return false;
+    return true;
+  }).sort((a,b)=>(b.lastDate||"9").localeCompare(a.lastDate||"9") || String(b.doc).localeCompare(String(a.doc)));
+}
+function renderHistory(){
+  const rows = historyRows();
+  $("#hCount").textContent = rows.length+" เอกสาร";
+  const items = rows.reduce((s,c)=>s+(c.items||0),0), nc=rows.reduce((s,c)=>s+(c.notCounted||0),0), df=rows.reduce((s,c)=>s+(c.diffItems||0),0);
+  const sl = new Set(rows.map(r=>r.sloc)).size;
+  $("#hStats").innerHTML = `<div>Sloc<b>${sl}</b></div><div>รายการนับ<b>${items.toLocaleString()}</b></div><div>ยังไม่นับ<b style="color:${nc?"var(--partial)":"inherit"}">${nc}</b></div><div>มีผลต่าง<b style="color:${df?"var(--late)":"inherit"}">${df}</b></div><div>ความแม่นยำ<b>${items?((1-df/items)*100).toFixed(2)+"%":"–"}</b></div>`;
+  $("#hTable").innerHTML = rows.length ? `<tr><th>วันที่นับ</th><th>Zone</th><th>Sloc</th><th>PI Doc</th><th class="n">รายการ</th><th class="n">Material</th><th class="n">ยังไม่นับ</th><th class="n">ผลต่าง</th><th>ผู้นับ</th><th>แหล่ง</th><th></th></tr>` +
+    rows.slice(0,500).map(c=>`<tr><td>${c.lastDate?fmtD(c.lastDate):'<span class="st partial">ยังไม่นับ</span>'}</td><td>${zoneOf(c.sloc)}</td>
+      <td><a href="#history" class="mono" onclick="openDrawer('${esc(c.sloc)}');return false">${esc(c.sloc)}</a></td><td class="mono">${esc(c.doc||"–")}</td>
+      <td class="n">${c.items||0}</td><td class="n">${c.mats||"–"}</td><td class="n">${c.notCounted?`<span class="st partial">${c.notCounted}</span>`:0}</td><td class="n">${c.diffItems?`<span class="st late">${c.diffItems}</span>`:0}</td>
+      <td>${esc((c.counters||[]).join(", "))}</td><td>${c.source==="manual"?"บันทึกเอง":"MI24"}${c.note?`<div class="sub">${esc(c.note)}</div>`:""}</td>
+      <td>${c.source==="manual"?`<button class="btn sm danger" onclick="delCount('${c.id}',this)">ลบ</button>`:""}</td></tr>`).join("")
+    + (rows.length>500?`<tr><td colspan="11" class="sub">แสดง 500 จาก ${rows.length} — กรองเพิ่มเพื่อดูรายการอื่น</td></tr>`:"")
+    : `<tr><td class="empty">ยังไม่มีข้อมูล — นำเข้าไฟล์ MI24 ที่แท็บ “นำเข้า MI24”</td></tr>`;
+}
+async function delCount(id, btn){
+  if (!btn.dataset.armed){ btn.dataset.armed=1; btn.textContent="ยืนยัน?"; return; }
+  try { await Store.del("counts", id); toast("ลบแล้ว"); } catch(e){ toast("ลบไม่สำเร็จ"); }
+}
+function openCountModal(pre={}){
+  const codes = allSlocCodes();
+  openModal(`
+    <div class="row"><h2>บันทึกผลนับ (manual)</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="sub">ใช้สำหรับ cycle count ที่ยังไม่ได้ลงใน SAP หรือจดบันทึกหน้างาน</div>
+    <div class="fgrid">
+      <label class="f">Sloc<input type="text" id="cmSloc" list="slocList" value="${esc(pre.sloc||"")}" placeholder="เช่น EAC0"><datalist id="slocList">${codes.map(c=>`<option value="${esc(c)}">`).join("")}</datalist></label>
+      <label class="f">วันที่นับ<input type="date" id="cmDate" value="${todayStr()}"></label>
+      <label class="f">ประเภท<select id="cmType">${Object.entries(TYPE_LBL).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></label>
+      <label class="f">PI Doc (ถ้ามี)<input type="text" id="cmDoc"></label>
+      <label class="f">จำนวนรายการที่นับ<input type="number" id="cmItems" value="0"></label>
+      <label class="f">ยังไม่ได้นับ<input type="number" id="cmNc" value="0"></label>
+      <label class="f">รายการที่มีผลต่าง<input type="number" id="cmDiff" value="0"></label>
+      <label class="f">ผู้นับ<input type="text" id="cmWho" list="ppl">${peopleOptions()}</label>
+    </div>
+    <label class="f">หมายเหตุ<textarea id="cmNote"></textarea></label>
+    <label style="display:block;margin-top:8px"><input type="checkbox" id="cmClose" checked> ปิดแผนของ Sloc นี้ที่ยังไม่เสร็จ (ตั้งสถานะเป็น “เสร็จแล้ว”)</label>
+    <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="cmSave">บันทึก</button></div>`);
+  $("#cmSave").onclick = async () => {
+    const sloc = $("#cmSloc").value.trim().toUpperCase(); if (!sloc) return toast("กรุณาระบุ Sloc");
+    const date = $("#cmDate").value;
+    const rec = { sloc, zone:zoneOf(sloc), doc:$("#cmDoc").value.trim(), type:$("#cmType").value, items:num($("#cmItems").value), mats:null,
+      notCounted:num($("#cmNc").value), diffItems:num($("#cmDiff").value), counters:$("#cmWho").value.trim()?[$("#cmWho").value.trim()]:[],
+      firstDate:date, lastDate:date, source:"manual", note:$("#cmNote").value.trim(), importedAt:new Date().toISOString() };
+    const close = $("#cmClose").checked; closeModal();
+    try {
+      await Store.put("counts", "m_"+uid(), rec);
+      if (close) await closePlansFor([rec]);
+      toast("บันทึกผลนับแล้ว");
+    } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
+}
+async function closePlansFor(recs){
+  let n=0;
+  for (const [id,p] of Object.entries(S.plans)) {
+    if (p.status==="done"||p.status==="cancelled") continue;
+    const hit = recs.find(r => r.sloc===p.sloc && r.lastDate && !(r.notCounted>0) && r.lastDate >= addDays(p.date,-7) && r.lastDate <= addDays(p.date,30));
+    if (hit) { await Store.put("plans", id, Object.assign({}, p, {status:"done", doneDate:hit.lastDate, doneDoc:hit.doc||"", updatedAt:new Date().toISOString()})); n++; }
+  }
+  return n;
+}
+
+/* ================= import MI24 ================= */
+const HDR = {
+  doc:["phys. inventory doc.","physical inventory document","phys. inv. doc.","เอกสารตรวจนับ"],
+  item:["item"], mat:["material","วัสดุ"], desc:["material description","คำอธิบายวัสดุ"], batch:["batch","แบทช์"],
+  plant:["plant","โรงงาน"], sloc:["storage location","sloc","stor. loc.","ที่เก็บ"],
+  status:["physical inventory status","status"], book:["book quantity","book qty"], qty:["qty counted","quantity counted","counted qty"],
+  diff:["difference quantity","difference qty","diff. qty"], by:["counted by"], date:["count date"]
+};
+let impData = null;
+function findCol(headers, keys){ const h=headers.map(x=>String(x||"").trim().toLowerCase()); for (const k of keys){ const i=h.indexOf(k); if(i>=0) return i; } return -1; }
+function toYmd(v){
+  if (v===null||v===undefined||v==="") return "";
+  if (v instanceof Date && !isNaN(v)) return ymd(new Date(v.getTime()+ (v.getTimezoneOffset()>0?0:0)));
+  if (typeof v==="number" && window.XLSX) { const o=XLSX.SSF.parse_date_code(v); if(o) return o.y+"-"+pad(o.m)+"-"+pad(o.d); }
+  const s=String(v).trim(); let m;
+  if ((m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return m[1]+"-"+pad(m[2])+"-"+pad(m[3]);
+  if ((m=/^(\d{1,2})[./](\d{1,2})[./](\d{4})/.exec(s))) return m[3]+"-"+pad(m[2])+"-"+pad(m[1]);
+  return "";
+}
+function parseMI24(ab){
+  const wb = XLSX.read(ab, {type:"array", cellDates:true});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:""});
+  let hi = rows.findIndex(r => findCol(r, HDR.sloc)>=0 && findCol(r, HDR.doc)>=0);
+  if (hi<0) throw new Error("ไม่พบหัวคอลัมน์ Phys. Inventory Doc. / Storage location");
+  const H = rows[hi]; const C = {}; for (const k in HDR) C[k]=findCol(H, HDR[k]);
+  const g = {}; let n=0;
+  for (const r of rows.slice(hi+1)) {
+    const doc = String(r[C.doc]??"").trim(), sloc = String(r[C.sloc]??"").trim().toUpperCase();
+    if (!doc || !sloc) continue; n++;
+    const key = doc+"_"+sloc;
+    const o = g[key] ||= { doc, sloc, plant:String(r[C.plant]??""), items:0, matSet:new Set(), counted:0, notCounted:0, diffItems:0, dates:[], counters:new Set(), diffs:[] };
+    o.items++; if (C.mat>=0) o.matSet.add(String(r[C.mat]));
+    const st = String(r[C.status]??"").toLowerCase();
+    const dt = C.date>=0 ? toYmd(r[C.date]) : "";
+    if (st.includes("not yet") || (!dt && !st.includes("counted"))) o.notCounted++; else o.counted++;
+    if (dt) o.dates.push(dt);
+    if (C.by>=0 && String(r[C.by]).trim()) o.counters.add(String(r[C.by]).trim());
+    const df = C.diff>=0 ? num(r[C.diff]) : (num(r[C.qty]) - num(r[C.book]));
+    if (df !== 0 && dt) { o.diffItems++; if (o.diffs.length<40) o.diffs.push({ mat:String(r[C.mat]??""), desc:String(r[C.desc]??"").slice(0,60), batch:String(r[C.batch]??""), book:num(r[C.book]), qty:num(r[C.qty]), diff:df }); }
+  }
+  const recs = Object.entries(g).map(([id,o])=>{
+    o.dates.sort();
+    return [id, { doc:o.doc, sloc:o.sloc, zone:zoneOf(o.sloc), plant:o.plant, type:"cycle", items:o.items, mats:o.matSet.size, counted:o.counted, notCounted:o.notCounted,
+      diffItems:o.diffItems, diffs:o.diffs, firstDate:o.dates[0]||"", lastDate:o.notCounted? (o.dates.length? o.dates[o.dates.length-1]:"") : (o.dates[o.dates.length-1]||""),
+      counters:[...o.counters].sort(), source:"MI24", importedAt:new Date().toISOString() }];
+  });
+  return { rowCount:n, recs };
+}
+function handleFile(f){
+  if (!f) return;
+  if (!window.XLSX) { toast("โหลดตัวอ่าน Excel ไม่สำเร็จ ลองรีเฟรชหน้า"); return; }
+  const rd = new FileReader();
+  rd.onload = () => {
+    try { impData = parseMI24(new Uint8Array(rd.result)); impData.name=f.name; renderImportPreview(); }
+    catch(e){ $("#impPreview").innerHTML = `<div class="banner">อ่านไฟล์ไม่สำเร็จ: ${esc(e.message||e)}</div>`; }
+  };
+  rd.readAsArrayBuffer(f);
+}
+function renderImportPreview(){
+  const d = impData; if (!d) return;
+  const recs = d.recs.map(x=>x[1]);
+  const isNew = d.recs.filter(([id,r])=>!S.counts[id]).length;
+  const changed = d.recs.filter(([id,r])=>S.counts[id] && sig(S.counts[id])!==sig(r)).length;
+  const dates = recs.flatMap(r=>[r.firstDate,r.lastDate]).filter(Boolean).sort();
+  const slocs = [...new Set(recs.map(r=>r.sloc))].sort();
+  const byZ = {}; for (const r of recs) (byZ[zoneOf(r.sloc)] ||= new Set()).add(r.sloc);
+  $("#impPreview").innerHTML = `
+    <h3>📄 ${esc(d.name)}</h3>
+    <div class="statline"><div>รายการ (บรรทัด)<b>${d.rowCount.toLocaleString()}</b></div><div>PI Doc × Sloc<b>${recs.length}</b></div><div>Sloc<b>${slocs.length}</b></div>
+      <div>ช่วงวันที่นับ<b>${dates.length?fmtD(dates[0])+" – "+fmtD(dates[dates.length-1]):"–"}</b></div>
+      <div>ยังไม่นับ<b>${recs.reduce((s,r)=>s+r.notCounted,0)}</b></div><div>มีผลต่าง<b>${recs.reduce((s,r)=>s+r.diffItems,0)}</b></div></div>
+    <div class="sub" style="margin-bottom:8px">${Object.keys(byZ).sort((a,b)=>zoneIdx(a)-zoneIdx(b)).map(z=>`<b>${zoneName(z)}</b>: ${[...byZ[z]].sort().join(", ")}`).join("<br>")}</div>
+    <div class="row"><span>ใหม่ <b>${isNew}</b> · เปลี่ยนแปลง <b>${changed}</b> · เหมือนเดิม <b>${recs.length-isNew-changed}</b></span><div class="spacer"></div>
+      <label><input type="checkbox" id="impClose" checked> ปิดแผนที่ตรงกับผลนับอัตโนมัติ</label>
+      <button class="btn pri" id="impGo" ${isNew+changed?"":"disabled"}>นำเข้า ${isNew+changed} รายการ</button></div>`;
+  $("#impGo").onclick = doImport;
+}
+function sig(r){ return JSON.stringify([r.items,r.counted,r.notCounted,r.diffItems,r.firstDate,r.lastDate,(r.counters||[]).join()]); }
+async function doImport(){
+  const todo = impData.recs.filter(([id,r])=>!S.counts[id] || sig(S.counts[id])!==sig(r));
+  const btn=$("#impGo"); btn.disabled=true;
+  let i=0;
+  try {
+    await Store.putMany("counts", todo, n => { i = n; btn.textContent = `กำลังนำเข้า ${n}/${todo.length}…`; });
+    let closed = 0; if ($("#impClose")?.checked) closed = await closePlansFor(todo.map(x=>x[1]));
+    toast(`นำเข้า ${i} รายการแล้ว${closed?` · ปิดแผน ${closed} รายการ`:""}`, 4000);
+    renderImportPreview();
+  } catch(e){ toast(`นำเข้าได้ ${i}/${todo.length} รายการ แล้วหยุด (${e&&e.code||"error"})`, 5000); btn.disabled=false; btn.textContent="ลองนำเข้าต่อ"; }
+}
+function renderImportSide(){
+  if (document.activeElement && ["cfgCycle","cfgCap","cfgPeople"].includes(document.activeElement.id)) {} else {
+    $("#cfgCycle").value = S.config.cycleDays||30; $("#cfgCap").value = S.config.capacity||300; $("#cfgPeople").value = S.config.people||"";
+    $("#cfgFy").innerHTML = TH_MON_FULL.map((m,i)=>`<option value="${i+1}">${m}${i===0?" (ปีปฏิทิน)":""}</option>`).join(""); $("#cfgFy").value = String(S.config.fyStart||1);
+  }
+  const info = slocInfo();
+  const codes = Object.keys(info).sort((a,b)=>{ const za=zoneOf(a), zb=zoneOf(b); return za===zb? a.localeCompare(b) : zoneIdx(za)-zoneIdx(zb); });
+  $("#slocTable").innerHTML = `<tr><th>Sloc</th><th>โซน</th><th>คำอธิบาย</th><th>นับล่าสุด</th><th></th></tr>` + codes.map(c=>{
+    const o=S.slocs[c]||{};
+    return `<tr><td class="mono">${esc(c)}</td>
+      <td><select data-c="${esc(c)}" class="slZone" style="min-height:28px;padding:2px 6px">${["",...GROUPS,OTHER].map(z=>`<option value="${esc(z)}" ${(o.zone||"")===z?"selected":""}>${z===""?"อัตโนมัติ ("+zoneName(autoZone(c))+")":zoneName(z)}</option>`).join("")}</select></td>
+      <td><input type="text" class="slDesc" data-c="${esc(c)}" value="${esc(o.desc||"")}" style="min-height:28px;padding:2px 8px;width:100%"></td>
+      <td>${fmtD(info[c].last)}</td>
+      <td>${S.slocs[c] && !info[c].counts.length && !info[c].plans.length ? `<button class="btn sm danger" onclick="delSloc('${esc(c)}',this)">ลบ</button>` : ""}</td></tr>`;
+  }).join("");
+  document.querySelectorAll(".slZone").forEach(el=>el.onchange=()=>saveSloc(el.dataset.c,{zone:el.value}));
+  document.querySelectorAll(".slDesc").forEach(el=>el.onchange=()=>saveSloc(el.dataset.c,{desc:el.value.trim()}));
+}
+async function saveSloc(code, patch){
+  const o = Object.assign({code}, S.slocs[code]||{}, patch);
+  try { await Store.put("slocs", code, o); toast("บันทึก "+code+" แล้ว"); } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+}
+async function delSloc(code, btn){
+  if (!btn.dataset.armed){ btn.dataset.armed=1; btn.textContent="ยืนยัน?"; return; }
+  try { await Store.del("slocs", code); toast("ลบ "+code+" แล้ว"); } catch(e){ toast("ลบไม่สำเร็จ"); }
+}
+async function addSloc(){
+  const c = $("#newSloc").value.trim().toUpperCase(); if (!/^[A-Z0-9]{2,8}$/.test(c)) return toast("รหัส Sloc ไม่ถูกต้อง");
+  const auto = autoZone(c); const z = $("#newSlocZone").value;
+  await saveSloc(c, { zone: z===auto ? "" : z, desc:$("#newSlocDesc").value.trim() });
+  $("#newSloc").value=""; $("#newSlocDesc").value="";
+}
+async function saveConfig(){
+  await Store.putConfig({ cycleDays:Math.max(1,num($("#cfgCycle").value)), capacity:Math.max(10,num($("#cfgCap").value)), people:$("#cfgPeople").value.trim(), fyStart:Number($("#cfgFy").value)||1 });
+  toast("บันทึกตั้งค่าแล้ว");
+}
+
+/* ================= quarterly monitoring ================= */
+const fyStart = () => Math.min(12, Math.max(1, Number(S.config.fyStart)||1));
+function qRange(fy, q){ // fy = calendar year in which the fiscal year starts
+  const m0 = fyStart()-1 + (q-1)*3;
+  const a = new Date(fy, m0, 1), b = new Date(fy, m0+3, 0);
+  return { from: ymd(a), to: ymd(b), a, b };
+}
+function currentQ(d=new Date()){
+  const m = d.getMonth(), y = d.getFullYear(), s = fyStart()-1;
+  const fy = m >= s ? y : y-1; const idx = ((m - s) + 12) % 12;
+  return { fy, q: Math.floor(idx/3)+1 };
+}
+function qLabel(fy,q){ const r=qRange(fy,q); return `${TH_MON[r.a.getMonth()]}–${TH_MON[r.b.getMonth()]} ${String(r.b.getFullYear()+543).slice(2)}`; }
+function fyLabel(fy){ return fyStart()===1 ? "ปี "+(fy+543) : `ปีบัญชี ${fy+543}/${String(fy+544).slice(2)}`; }
+function pctColor(p){ return p>=100 ? "var(--done)" : p>=50 ? "var(--partial)" : p>0 ? "var(--late)" : "var(--none)"; }
+function heatBg(p){ if (p>=100) return ["#1f8a4c","#fff"]; if (p>=75) return ["#7cc79a","#0f3d23"]; if (p>=50) return ["#c9e8d3","#1d5233"]; if (p>=25) return ["#fbe3b8","#6e4a0d"]; if (p>0) return ["#fbd3c2","#7a2e0e"]; return ["#f1f2ef","#8a918d"]; }
+let qYear = null, qSel = null, qBasis = "sloc";
+function coverage(from, to){
+  const info = slocInfo(); const today = todayStr();
+  const zones = {}, slocs = {};
+  for (const m of Object.values(info)) {
+    const done = m.counts.filter(c => c.lastDate && c.lastDate>=from && c.lastDate<=to && !(c.notCounted>0)).map(c=>c.lastDate).sort();
+    const partial = m.counts.some(c => c.lastDate && c.lastDate>=from && c.lastDate<=to && c.notCounted>0);
+    const plans = m.plans.filter(p => p.date>=from && p.date<=to && p.status!=="cancelled" && p.status!=="done").map(p=>p.date).sort();
+    const st = done.length ? "done" : plans.length ? "planned" : partial ? "partial" : "none";
+    slocs[m.code] = { code:m.code, zone:m.zone, st, done, plans, w:m.sizeEst };
+    const z = zones[m.zone] ||= { tot:0, done:0, plan:0, wTot:0, wDone:0, wPlan:0 };
+    z.tot++; z.wTot += m.sizeEst;
+    if (st==="done"){ z.done++; z.wDone += m.sizeEst; }
+    else if (st==="planned"){ z.plan++; z.wPlan += m.sizeEst; }
+  }
+  const all = Object.values(zones).reduce((t,z)=>{ for (const k in z) t[k]=(t[k]||0)+z[k]; return t; }, {tot:0,done:0,plan:0,wTot:0,wDone:0,wPlan:0});
+  const hasData = Object.values(S.counts).some(c => c.lastDate && c.lastDate>=from && c.lastDate<=to);
+  const current = from <= today && to >= today;
+  return { zones, slocs, all, future: from > today, current, noData: !hasData && !current && from <= today };
+}
+const pctOf = (z, k) => { if (!z) return 0; const t = qBasis==="items" ? z.wTot : z.tot; const v = qBasis==="items" ? (k==="done"?z.wDone:z.wPlan) : (k==="done"?z.done:z.plan); return t ? v/t*100 : 0; };
+function renderQuarter(){
+  const cur = currentQ();
+  if (qYear===null) qYear = cur.fy;
+  if (!qSel) qSel = { q: cur.fy===qYear ? cur.q : 1, z: "" };
+  $("#qYear").textContent = fyLabel(qYear);
+  $("#qSub").textContent = qBasis==="items"
+    ? "% ถ่วงน้ำหนักด้วยจำนวนรายการ (ประมาณจากการนับครั้งก่อน) ของ Sloc ที่นับครบอย่างน้อย 1 ครั้งในไตรมาส"
+    : "% ของ Sloc ในแต่ละโซนที่นับครบอย่างน้อย 1 ครั้งในไตรมาส (เอกสารที่ยังมี Not Yet Counted ไม่นับรวม)";
+  document.querySelectorAll("#qBasis button").forEach(b=>b.classList.toggle("on", b.dataset.b===qBasis));
+  const zl = zoneList();
+  const covs = [1,2,3,4].map(q => { const r=qRange(qYear,q); return Object.assign(coverage(r.from,r.to), r); });
+
+  // ---- current (or selected) quarter summary ----
+  const fq = qSel.q; const C = covs[fq-1];
+  const pAll = pctOf(C.all,"done"), pPl = pctOf(C.all,"plan");
+  const R = 62, L = 2*Math.PI*R;
+  const daysLeft = C.current ? daysBetween(todayStr(), C.to) : null;
+  const remain = C.all.tot - C.all.done;
+  $("#qRing").innerHTML = `
+    <div class="sub">ภาพรวม Q${fq} · ${qLabel(qYear,fq)}</div>
+    <svg width="160" height="160" viewBox="0 0 160 160">
+      <circle cx="80" cy="80" r="${R}" fill="none" stroke="#eef0eb" stroke-width="16"/>
+      <circle cx="80" cy="80" r="${R}" fill="none" stroke="#9db7f0" stroke-width="16" stroke-dasharray="${L*Math.min(1,(pAll+pPl)/100)} ${L}" transform="rotate(-90 80 80)"/>
+      <circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--done)" stroke-width="16" stroke-linecap="${pAll>0&&pAll<100?"round":"butt"}" stroke-dasharray="${L*pAll/100} ${L}" transform="rotate(-90 80 80)"/>
+      <text x="80" y="82" text-anchor="middle" font-size="32" font-weight="700" fill="var(--ink)" font-family="IBM Plex Sans Thai">${Math.round(pAll)}%</text>
+      <text x="80" y="104" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Sans Thai">นับครบแล้ว</text>
+    </svg>
+    <div><b>${C.all.done}</b> / ${C.all.tot} Sloc นับครบ${C.all.plan?` · <span style="color:var(--plan)">มีแผน ${C.all.plan}</span>`:""}</div>
+    ${C.current ? `<div class="sub">เหลือ ${daysLeft} วันในไตรมาส · ต้องนับอีก ${remain} Sloc${remain&&daysLeft>0?` (~${Math.ceil(remain/Math.max(1,Math.round(daysLeft*5/7)))} Sloc/วันทำงาน)`:""}</div>`
+      : C.future ? `<div class="sub">ไตรมาสยังไม่เริ่ม</div>` : `<div class="sub">ไตรมาสสิ้นสุดแล้ว${remain?` · ไม่ได้นับ ${remain} Sloc`:" · นับครบทุก Sloc ✓"}</div>`}`;
+  $("#qNowTitle").textContent = `แต่ละโซน — Q${fq} (${qLabel(qYear,fq)})${C.current?" · ไตรมาสปัจจุบัน":""}`;
+  $("#qBars").innerHTML = zl.map(z => {
+    const zz = C.zones[z]; const pd = pctOf(zz,"done"), pp = pctOf(zz,"plan");
+    return `<div class="zbar" onclick="qPick(${fq},'${esc(z)}')" title="${zz?`${zz.done}/${zz.tot} Sloc`:"ไม่มี Sloc"}"><span><b>${esc(zoneName(z))}</b></span>
+      <div class="bar"><span style="width:${pd}%;background:var(--done)"></span><span style="width:${pp}%;background:#9db7f0"></span></div>
+      <b class="p" style="color:${zz?pctColor(pd):"var(--none)"}">${zz?Math.round(pd)+"%":"–"}</b></div>`;
+  }).join("");
+
+  // ---- heatmap ----
+  const cell = (cov, z, q) => {
+    const zz = z==="__all" ? cov.all : cov.zones[z];
+    const sel = qSel.q===q && (qSel.z===(z==="__all"?"":z)) ? " sel" : "";
+    if (!zz || !zz.tot) return `<td class="fut" style="cursor:default">–</td>`;
+    const pd = pctOf(zz,"done"), pp = pctOf(zz,"plan");
+    if (cov.noData) return `<td class="fut${sel}" onclick="qPick(${q},'${z==="__all"?"":esc(z)}')"><b>–</b><small>ไม่มีข้อมูลนับ</small></td>`;
+    if (cov.future && !zz.done) return `<td class="fut${sel}" onclick="qPick(${q},'${z==="__all"?"":esc(z)}')"><b>${pp?Math.round(pp)+"%":"–"}</b><small>${zz.plan?`มีแผน ${zz.plan}/${zz.tot}`:"ยังไม่เริ่ม"}</small></td>`;
+    const [bg,fg] = heatBg(pd);
+    return `<td class="${sel.trim()}" style="background:${bg};color:${fg}" onclick="qPick(${q},'${z==="__all"?"":esc(z)}')"><b>${Math.round(pd)}%</b><small>${zz.done}/${zz.tot} Sloc${zz.plan?` · แผน ${zz.plan}`:""}</small></td>`;
+  };
+  const yAll = (() => { // year coverage: counted at least once in the whole year
+    const c = coverage(qRange(qYear,1).from, qRange(qYear,4).to); return c; })();
+  const yCell = z => { const zz = z==="__all"?yAll.all:yAll.zones[z]; if(!zz||!zz.tot) return `<td class="fut">–</td>`; const pd=pctOf(zz,"done"); const [bg,fg]=heatBg(pd); return `<td style="background:${bg};color:${fg};cursor:default"><b>${Math.round(pd)}%</b><small>${zz.done}/${zz.tot}</small></td>`; };
+  $("#qHeat").innerHTML = `<tr><th class="zn">โซน</th>${[1,2,3,4].map(q=>`<th>Q${q}${cur.fy===qYear&&cur.q===q?" ●":""}<div class="sub" style="font-weight:400">${qLabel(qYear,q)}</div></th>`).join("")}<th>ทั้งปี<div class="sub" style="font-weight:400">นับอย่างน้อย 1 ครั้ง</div></th></tr>`
+    + zl.map(z => `<tr><td class="zn">${esc(zoneName(z))}<div class="sub" style="font-weight:400">${(covs[0].zones[z]||{}).tot||0} Sloc</div></td>${covs.map((c,i)=>cell(c,z,i+1)).join("")}${yCell(z)}</tr>`).join("")
+    + `<tr class="tot"><td class="zn">รวมทุกโซน</td>${covs.map((c,i)=>cell(c,"__all",i+1)).join("")}${yCell("__all")}</tr>`;
+
+  // ---- matrix ----
+  const zf = $("#qZone").value; const show = $("#qShow").value;
+  $("#qMxTitle").textContent = `รายละเอียด Sloc × ไตรมาส${zf?" — "+zoneName(zf):""}`;
+  const fmtS = d => { const x=parseYmd(d); return x.getDate()+" "+TH_MON[x.getMonth()]; };
+  const codes = Object.keys(covs[0].slocs).filter(c => (!zf || zoneOf(c)===zf) && (!show || covs[fq-1].slocs[c].st!=="done"))
+    .sort((a,b)=> zoneIdx(zoneOf(a))-zoneIdx(zoneOf(b)) || a.localeCompare(b));
+  let lastZ = null, rows = "";
+  for (const c of codes) {
+    const z = zoneOf(c);
+    if (z!==lastZ) { const zz=covs[fq-1].zones[z]; rows += `<tr class="zh"><td colspan="2">${esc(zoneName(z))}</td>${covs.map((cv,i)=>{ const x=cv.zones[z]; return `<td class="q">${x&&!cv.future&&!cv.noData?Math.round(pctOf(x,"done"))+"%":""}</td>`; }).join("")}</tr>`; lastZ = z; }
+    rows += `<tr><td><a href="#quarter" class="mono" onclick="openDrawer('${esc(c)}');return false">${esc(c)}</a></td><td class="sub">${esc((S.slocs[c]||{}).desc||"")}</td>` + covs.map((cv,i) => {
+      const x = cv.slocs[c];
+      if (x.st==="done") return `<td class="q"><span class="y" title="${x.done.map(fmtD).join(", ")}">✓ ${fmtS(x.done[x.done.length-1])}${x.done.length>1?` (${x.done.length})`:""}</span></td>`;
+      if (x.st==="planned") return `<td class="q"><span class="pl">แผน ${fmtS(x.plans[0])}</span></td>`;
+      if (x.st==="partial") return `<td class="q"><span class="pa">ไม่ครบ</span></td>`;
+      return `<td class="q"><span class="no">${cv.future||cv.noData?"·":"✗"}</span></td>`;
+    }).join("") + `</tr>`;
+  }
+  $("#qMx").innerHTML = `<tr><th>Sloc</th><th>คำอธิบาย</th>${[1,2,3,4].map(q=>`<th style="text-align:center">Q${q}<div class="sub" style="font-weight:400">${qLabel(qYear,q)}</div></th>`).join("")}</tr>` + (rows || `<tr><td colspan="6" class="empty">ไม่มีรายการ</td></tr>`);
+}
+function qPick(q, z){ qSel = { q, z }; $("#qZone").value = z; renderQuarter(); }
+function exportQuarter(){
+  const covs = [1,2,3,4].map(q => { const r=qRange(qYear,q); return coverage(r.from,r.to); });
+  const rows = [["Zone","Sloc", ...[1,2,3,4].map(q=>"Q"+q+" ("+qLabel(qYear,q)+")")]];
+  Object.keys(covs[0].slocs).sort((a,b)=>zoneIdx(zoneOf(a))-zoneIdx(zoneOf(b))||a.localeCompare(b)).forEach(c=>{
+    rows.push([zoneName(zoneOf(c)), c, ...covs.map(cv=>{ const x=cv.slocs[c]; return x.st==="done"?"นับแล้ว "+x.done[x.done.length-1] : x.st==="planned"?"แผน "+x.plans[0] : x.st==="partial"?"ไม่ครบ":""; })]);
+  });
+  rows.push([]); rows.push(["Zone","Sloc ทั้งหมด", ...[1,2,3,4].map(q=>"Q"+q+" %")]);
+  zoneList().forEach(z => rows.push([zoneName(z), (covs[0].zones[z]||{}).tot||0, ...covs.map(cv=>cv.zones[z]?Math.round(pctOf(cv.zones[z],"done"))+"%":"")]));
+  saveFile("quarterly-coverage-"+(qYear+543)+".csv", csv(rows));
+}
+
+/* ================= export ================= */
+function csv(rows){ return "﻿"+rows.map(r=>r.map(v=>{ const s=String(v??""); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }).join(",")).join("\r\n"); }
+async function saveFile(name, text){
+  try {
+    const url = URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"}));
+    const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  } catch(e){
+    try { await navigator.clipboard.writeText(text); toast("คัดลอก CSV ไปยังคลิปบอร์ดแล้ว"); } catch(_){ toast("ดาวน์โหลดไม่สำเร็จ"); }
+  }
+}
+function exportPlans(){
+  const rows = [["วันที่","Zone","Sloc","ประเภท","ผู้รับผิดชอบ","สถานะ","หมายเหตุ"]];
+  Object.values(S.plans).sort((a,b)=>a.date.localeCompare(b.date)).forEach(p=>rows.push([p.date,zoneOf(p.sloc),p.sloc,TYPE_LBL[p.type]||p.type,p.assignee,PLAN_ST[planStatus(p)],p.note]));
+  saveFile("count-plan-"+todayStr()+".csv", csv(rows));
+}
+function exportHistory(){
+  const rows = [["วันที่นับ","เริ่มนับ","Zone","Sloc","PI Doc","รายการ","Material","ยังไม่นับ","มีผลต่าง","ผู้นับ","แหล่ง","หมายเหตุ"]];
+  historyRows().forEach(c=>rows.push([c.lastDate,c.firstDate,zoneOf(c.sloc),c.sloc,c.doc,c.items,c.mats,c.notCounted,c.diffItems,(c.counters||[]).join(" "),c.source,c.note]));
+  saveFile("count-history-"+todayStr()+".csv", csv(rows));
+}
+
+/* ================= wiring ================= */
+document.querySelectorAll("#pQuick button").forEach(b=>b.onclick=()=>setQuick(b.dataset.q));
+["#pFrom","#pTo"].forEach(s=>$(s).onchange=()=>{ document.querySelectorAll("#pQuick button").forEach(x=>x.classList.remove("on")); renderAll(); });
+$("#ovSearch").oninput = renderOverview;
+document.querySelectorAll("#qBasis button").forEach(b=>b.onclick=()=>{ qBasis=b.dataset.b; renderQuarter(); });
+$("#qPrev").onclick=()=>{ qYear--; qSel={q:1,z:qSel?qSel.z:""}; renderQuarter(); };
+$("#qNext").onclick=()=>{ qYear++; qSel={q:1,z:qSel?qSel.z:""}; renderQuarter(); };
+$("#qZone").onchange=()=>{ qSel = Object.assign({}, qSel, {z:$("#qZone").value}); renderQuarter(); };
+$("#qShow").onchange=renderQuarter;
+$("#calPrev").onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1); calDay=null; renderPlan(); };
+$("#calNext").onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1); calDay=null; renderPlan(); };
+$("#calToday").onclick=()=>{ const d=new Date(); calMonth=new Date(d.getFullYear(),d.getMonth(),1); calDay=null; renderPlan(); };
+$("#calZone").onchange=renderPlan; $("#plStatus").onchange=()=>{ calDay=null; renderPlan(); };
+["#hZone","#hFlag","#hFrom","#hTo"].forEach(s=>$(s).onchange=renderHistory); $("#hSloc").oninput=renderHistory;
+const drop=$("#drop");
+drop.onclick=()=>$("#file").click();
+$("#file").onchange=e=>handleFile(e.target.files[0]);
+drop.ondragover=e=>{e.preventDefault();drop.classList.add("over");};
+drop.ondragleave=()=>drop.classList.remove("over");
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove("over");handleFile(e.dataTransfer.files[0]);};
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closeDrawer(); } });
+
+let q0="month"; try{ q0 = localStorage.getItem(LS_KEY+".period") || "month"; }catch(e){}
+setQuick(["month","quarter","year"].includes(q0)?q0:"month");
+route();
+function pinToggle(){ if (getPin()) { setPin(""); toast("ออกจากโหมดแก้ไขแล้ว"); Store.pull().catch(()=>{}); } else askPin(); }
+setInterval(()=>{ const b=$("#pinBtn"); if(!b) return; b.style.display = Store.pinRequired ? "" : "none"; b.textContent = getPin() ? "🔓 ออกจากโหมดแก้ไข" : "🔒 ใส่ PIN"; }, 1000);
+Store.init();
+</script>
+</body>
+</html>

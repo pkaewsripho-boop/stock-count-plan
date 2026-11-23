@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: stock-count-plan
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.cjs
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: EDIT_PIN
+        sync: false

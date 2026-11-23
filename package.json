@@ -1,0 +1,15 @@
+{
+  "name": "stock-count-plan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "แผนการตรวจนับสต็อก Zone A–L (Cycle count planning + SAP MI24 import)",
+  "scripts": {
+    "start": "node server.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}
