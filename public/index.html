@@ -179,6 +179,27 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
 .bulkbar .btn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
 .sugg{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid var(--partial-bd);border-radius:14px;padding:12px 16px;margin:14px 0}
 .sugg .ic{font-size:22px}
+/* ---- zone owners ---- */
+.own{display:inline-flex;align-items:center;gap:5px;font-size:12px;border-radius:99px;padding:2px 9px 2px 3px;background:#f1f5f9;color:#334155;white-space:nowrap}
+.own .av{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10.5px;font-weight:700;flex:none}
+.own.pri{background:#eef2ff;color:#3730a3;font-weight:600}
+.own.bk{background:#fff;border:1px dashed #cbd5e1}
+.owners{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ocard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;border-left:4px solid var(--zc);background:#fff;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:box-shadow .15s}
+.ocard:hover{box-shadow:0 4px 14px rgba(15,23,42,.08)}
+.ocard .h{display:flex;align-items:center;gap:8px}
+.ocard .zb{width:26px;height:26px;border-radius:8px;background:var(--zc);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px}
+.ocard.empty{border-style:dashed;border-left-style:solid}
+.zpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:10px 0}
+.zpick .zr{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;border-left:4px solid var(--zc)}
+.zpick .zr select{min-height:30px;padding:2px 6px;margin-left:auto}
+.zpick .zr.on{background:var(--accent-soft);border-color:#c7d2fe}
+.taglist{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 8px;min-height:40px}
+.taglist input{border:none!important;box-shadow:none!important;min-height:28px!important;flex:1;min-width:120px;padding:2px 4px}
+.taglist .own button{border:none;background:none;cursor:pointer;color:#94a3b8;padding:0 0 0 2px;font-size:14px;line-height:1}
+.pbar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;min-width:120px}
+.pbar span{display:block;height:100%;background:linear-gradient(90deg,#34d399,#059669)}
 /* ---- notices ---- */
 #notices{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
 .notice{position:relative;border-radius:18px;padding:18px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;overflow:hidden;box-shadow:0 10px 30px rgba(79,70,229,.18)}
@@ -240,6 +261,13 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
     </div>
     <div class="kpis" id="kpis"></div>
     <div class="row">
+      <select id="ovOwner" title="ดูเฉพาะโซนของผู้รับผิดชอบ" style="max-width:240px"><option value="">👥 ทุกผู้รับผิดชอบ</option></select>
+      <label class="sub" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ovShowOff"> แสดง Sloc ที่พักใช้/ยกเลิก</label>
+      <div class="spacer"></div>
+      <input type="text" id="ovSearch" placeholder="ค้นหา Sloc…" style="width:150px">
+      <button class="btn pri" onclick="openPlanModal()">+ วางแผนนับ</button>
+    </div>
+    <div class="row" style="margin-top:10px">
       <div class="legend">
         <span><i style="background:var(--done)"></i>นับครบแล้วในรอบ</span>
         <span><i style="background:var(--partial)"></i>นับยังไม่ครบ</span>
@@ -248,10 +276,6 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
         <span><i style="background:#cbd5e1"></i>ยังไม่นับ/ไม่มีแผน</span>
         <span>· ตัวเลขใต้รหัส = วันนับล่าสุด (กี่วันก่อน)</span>
       </div>
-      <div class="spacer"></div>
-      <label class="sub" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ovShowOff"> แสดง Sloc ที่พักใช้/ยกเลิก</label>
-      <input type="text" id="ovSearch" placeholder="ค้นหา Sloc…" style="width:150px">
-      <button class="btn pri" onclick="openPlanModal()">+ วางแผนนับ</button>
     </div>
     <div class="zones" id="zones"></div>
   </section>
@@ -273,6 +297,10 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
     <div class="panel" style="margin-top:14px">
       <div class="row" style="margin-bottom:4px"><h3 style="margin:0">Heatmap: % นับครบ แยกโซน × ไตรมาส</h3><div class="spacer"></div><span class="sub">คลิกช่องเพื่อดูรายละเอียด Sloc</span></div>
       <div style="overflow:auto"><table class="hm" id="qHeat"></table></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="row" style="margin-bottom:8px"><h3 style="margin:0" id="qPplTitle">สรุปตามผู้รับผิดชอบ</h3><div class="spacer"></div><a href="#slocs" class="sub">กำหนดผู้รับผิดชอบ →</a></div>
+      <div class="tw" style="max-height:420px"><table class="t" id="qPpl"></table></div>
     </div>
     <div class="panel" style="margin-top:14px">
       <div class="row" style="margin-bottom:8px"><h3 style="margin:0" id="qMxTitle">รายละเอียด Sloc × ไตรมาส</h3><div class="spacer"></div>
@@ -345,6 +373,13 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
   <section id="v-slocs" class="hide">
     <div class="row">
       <div><h2>จัดการ Sloc</h2><div class="sub">กำหนดสถานะการใช้งาน: ใช้งาน · พักใช้ชั่วคราว · ยกเลิกใช้ — Sloc ที่พักใช้/ยกเลิก จะไม่ถูกนับเป็นเป้าหมายใน % และไม่ถูกจัดเข้าแผน ตั้งแต่วันที่มีผล</div></div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="row" style="margin-bottom:10px"><h3 style="margin:0">👥 ผู้รับผิดชอบโซน</h3>
+        <span class="sub">แต่ละโซนมีผู้รับผิดชอบหลัก 1 คน + ผู้ช่วย/สำรองได้หลายคน · 1 คนดูแลได้หลายโซน</span><div class="spacer"></div>
+        <div class="seg" id="ownView"><button data-v="zone" class="on">ตามโซน</button><button data-v="person">ตามคน</button></div>
+        <button class="btn sm pri" onclick="openPersonModal()">+ กำหนดโซนให้คน</button></div>
+      <div id="ownBox"></div>
     </div>
     <div class="kpis" id="slKpis"></div>
     <div id="slSugg"></div>
@@ -464,8 +499,8 @@ function zoneOf(code){
 }
 
 /* ================= state & storage ================= */
-const S = { counts:{}, plans:{}, slocs:{}, notices:{}, config:{ cycleDays:30, capacity:300, people:"" } };
-const COLS = ["counts","plans","slocs","notices"];
+const S = { counts:{}, plans:{}, slocs:{}, notices:{}, zones:{}, config:{ cycleDays:30, capacity:300, people:"" } };
+const COLS = ["counts","plans","slocs","notices","zones"];
 const LS_KEY = "stockcount-plan.v1";
 /* Store: คุยกับ server (/api/state, /api/write) • ข้อมูลกลางของทีม • ดึงการเปลี่ยนแปลงทุก 15 วินาที */
 const Store = {
@@ -640,7 +675,9 @@ function fillZoneSelects(){
 
 /* ================= overview ================= */
 function renderOverview(){
-  const info = slocInfo(); const all = Object.values(info); const list = all.filter(m=>!m.off);
+  fillOwnerSelect("#ovOwner");
+  const ow = $("#ovOwner").value; const owZ = ow ? new Set(ownerZones(ow).map(x=>x.zone)) : null;
+  const info = slocInfo(); const all = Object.values(info).filter(m => !owZ || owZ.has(m.zone)); const list = all.filter(m=>!m.off);
   const offN = all.length - list.length;
   const showOff = $("#ovShowOff") && $("#ovShowOff").checked;
   const q = $("#ovSearch").value.trim().toUpperCase();
@@ -660,7 +697,7 @@ function renderOverview(){
   const offZone = {};
   for (const m of list) (byZone[m.zone] ||= []).push(m);
   for (const m of all) if (m.off) (offZone[m.zone] ||= []).push(m);
-  const order = zoneList();
+  const order = zoneList().filter(z => !owZ || owZ.has(z));
   $("#zones").innerHTML = order.map(z => {
     let ms = (byZone[z]||[]).concat(showOff ? (offZone[z]||[]) : []);
     if (q) ms = ms.filter(m => m.code.includes(q) || (m.desc||"").toUpperCase().includes(q));
@@ -675,7 +712,8 @@ function renderOverview(){
     }).join("") : `<span class="sub">ยังไม่มี Sloc — เพิ่มได้ที่หน้า “นำเข้า / ตั้งค่า”</span>`;
     return `<div class="zone" style="--zc:${zoneColor(z)}">
       <div class="zh"><div class="zl ${z.length>1||z===OTHER?"other":""}">${z===OTHER?"อื่น":z}</div>
-        <div class="zt"><b>${zoneName(z)}</b> <b class="zpct" style="float:right;color:${pctColor(tot?c("done")/tot*100:0)}">${tot?Math.round(c("done")/tot*100)+"%":"–"}</b><div class="sub">${tot} Sloc · นับครบ ${c("done")} · มีแผน ${c("planned")+c("late")} · เหลือ ${c("none")}${(offZone[z]||[]).length?` · <span style="color:var(--off)">ไม่นับ ${(offZone[z]||[]).length}</span>`:""}</div></div>
+        <div class="zt"><b>${zoneName(z)}</b> <b class="zpct" style="float:right;color:${pctColor(tot?c("done")/tot*100:0)}">${tot?Math.round(c("done")/tot*100)+"%":"–"}</b><div class="sub">${tot} Sloc · นับครบ ${c("done")} · มีแผน ${c("planned")+c("late")} · เหลือ ${c("none")}${(offZone[z]||[]).length?` · <span style="color:var(--off)">ไม่นับ ${(offZone[z]||[]).length}</span>`:""}</div>
+        <div class="owners">${ownerChips(z, true)}</div></div>
         <button class="btn sm" onclick="openPlanModal({zone:'${esc(z)}'})">+ แผน</button></div>
       <div class="bar">${seg("done","var(--done)")}${seg("partial","var(--partial)")}${seg("planned","var(--plan)")}${seg("late","var(--late)")}</div>
       <div class="chips">${chips}</div></div>`;
@@ -736,7 +774,7 @@ function closeModal(){ $("#modal").classList.remove("on"); $("#modalBg").classLi
 function peopleOptions(sel){
   const ppl = (S.config.people||"").split(",").map(s=>s.trim()).filter(Boolean);
   const fromHist = [...new Set(Object.values(S.counts).flatMap(c=>c.counters||[]))];
-  const all = [...new Set([...ppl,...fromHist])].sort();
+  const all = allPeople();
   return `<datalist id="ppl">${all.map(p=>`<option value="${esc(p)}">`).join("")}</datalist>`;
 }
 function openPlanModal(pre={}){
@@ -773,7 +811,10 @@ function openPlanModal(pre={}){
     sum();
   };
   const sum = () => { const items=[...selected].reduce((s,c)=>s+(info[c]?info[c].sizeEst:20),0); $("#pmSum").textContent = selected.size ? `เลือก ${selected.size} Sloc · ประมาณ ${items} รายการ (${[...selected].join(", ")})` : "ยังไม่ได้เลือก Sloc"; };
-  $("#pmZone").onchange = drawList;
+  const fillWho = () => { const o = zoneOwners($("#pmZone").value); if (!$("#pmWho").value.trim() || $("#pmWho").dataset.auto==="1") { $("#pmWho").value = o.primary||""; $("#pmWho").dataset.auto = "1"; } };
+  $("#pmWho").oninput = () => { $("#pmWho").dataset.auto = "0"; };
+  $("#pmZone").onchange = () => { fillWho(); drawList(); };
+  fillWho();
   $("#pmAll").onclick = () => { Object.values(info).filter(m=>m.zone===$("#pmZone").value && m.status==="none").forEach(m=>selected.add(m.code)); drawList(); };
   $("#pmNone").onclick = () => { selected.clear(); drawList(); };
   $("#pmSave").onclick = async () => {
@@ -824,7 +865,7 @@ function openAutoModal(){
       <label class="f">เริ่มวันที่<input type="date" id="amFrom" value="${start}"></label>
       <label class="f">ไม่เกินวันที่<input type="date" id="amTo" value="${$("#pTo").value||addDays(start,30)}"></label>
       <label class="f">ความสามารถนับ (รายการ/วัน)<input type="number" id="amCap" value="${Number(S.config.capacity)||300}"></label>
-      <label class="f">ผู้รับผิดชอบ<input type="text" id="amWho" list="ppl">${peopleOptions()}</label>
+      <label class="f">ผู้รับผิดชอบ<input type="text" id="amWho" list="ppl" placeholder="ว่าง = ตามผู้รับผิดชอบโซน">${peopleOptions()}</label>
     </div>
     <div class="row" style="margin-bottom:8px"><label><input type="checkbox" id="amWe" checked> ข้ามเสาร์-อาทิตย์</label>
       <label><input type="checkbox" id="amOverdue"> เฉพาะที่ไม่ได้นับเกิน ${Number(S.config.cycleDays)||30} วัน</label></div>
@@ -851,8 +892,8 @@ function openAutoModal(){
     }
     const days = [...new Set(draft.map(x=>x.date))];
     $("#amSum").textContent = `${draft.length} Sloc · ${days.length} วัน` + (left.length?` · ไม่พอวัน ${left.length} Sloc`:"");
-    $("#amPrev").innerHTML = draft.length ? `<div class="tw" style="max-height:300px"><table class="t"><tr><th>วันที่</th><th>Sloc</th><th class="n">~รายการ/วัน</th></tr>
-      ${days.map(dd=>{ const r=draft.filter(x=>x.date===dd); return `<tr><td>${TH_DOW[parseYmd(dd).getDay()]} ${fmtD(dd)}</td><td>${r.map(x=>`<span class="mono">${esc(x.sloc)}</span>`).join(", ")}</td><td class="n">${r.reduce((s,x)=>s+x.est,0)}</td></tr>`; }).join("")}</table></div>
+    $("#amPrev").innerHTML = draft.length ? `<div class="tw" style="max-height:300px"><table class="t"><tr><th>วันที่</th><th>Sloc / ผู้รับผิดชอบ</th><th class="n">~รายการ/วัน</th></tr>
+      ${days.map(dd=>{ const r=draft.filter(x=>x.date===dd); const who=[...new Set(r.map(x=>zoneOwners(x.zone).primary).filter(Boolean))]; return `<tr><td>${TH_DOW[parseYmd(dd).getDay()]} ${fmtD(dd)}</td><td>${r.map(x=>`<span class="mono">${esc(x.sloc)}</span>`).join(", ")}${!$("#amWho").value.trim()&&who.length?`<div class="sub">👤 ${who.map(esc).join(", ")}</div>`:""}</td><td class="n">${r.reduce((s,x)=>s+x.est,0)}</td></tr>`; }).join("")}</table></div>
       ${left.length?`<div class="banner" style="margin-top:8px">ไม่พอวันสำหรับ: ${left.map(m=>esc(m.code)).join(", ")} — ขยายวันสิ้นสุดหรือเพิ่มความสามารถนับ</div>`:""}`
       : `<div class="empty">ไม่มี Sloc ที่ต้องจัดแผน 🎉</div>`;
     $("#amSave").disabled = !draft.length;
@@ -860,7 +901,7 @@ function openAutoModal(){
   $("#amSave").onclick = async () => {
     const who = $("#amWho").value.trim(); const n = draft.length; closeModal();
     toast(`กำลังสร้างแผน ${n} รายการ…`, 6000);
-    try { for (const x of draft) await Store.put("plans", uid(), { sloc:x.sloc, zone:x.zone, date:x.date, type:"cycle", assignee:who, note:"จัดแผนอัตโนมัติ", status:"planned", createdAt:new Date().toISOString() }); toast(`สร้างแผน ${n} รายการแล้ว`); }
+    try { for (const x of draft) await Store.put("plans", uid(), { sloc:x.sloc, zone:x.zone, date:x.date, type:"cycle", assignee:who || zoneOwners(x.zone).primary || "", note:"จัดแผนอัตโนมัติ", status:"planned", createdAt:new Date().toISOString() }); toast(`สร้างแผน ${n} รายการแล้ว`); }
     catch(e){ toast("สร้างแผนไม่สำเร็จบางส่วน"); }
   };
 }
@@ -1085,10 +1126,144 @@ function renderImportSide(){
     $("#cfgFy").innerHTML = TH_MON_FULL.map((m,i)=>`<option value="${i+1}">${m}${i===0?" (ปีปฏิทิน)":""}</option>`).join(""); $("#cfgFy").value = String(S.config.fyStart||1);
   }
 }
+/* ================= zone owners (ผู้รับผิดชอบโซน) ================= */
+const zKey = z => z===OTHER ? "OTHER" : z;
+function zoneOwners(z){ const o = (S.zones||{})[zKey(z)] || {}; return { primary: o.primary||"", backups: Array.isArray(o.backups)?o.backups.filter(Boolean):[] }; }
+function ownerZones(name){ // [{zone, role:'primary'|'backup'}]
+  const out = []; if (!name) return out;
+  for (const z of [...GROUPS, OTHER]) { const o = zoneOwners(z); if (o.primary===name) out.push({zone:z, role:"primary"}); else if (o.backups.includes(name)) out.push({zone:z, role:"backup"}); }
+  return out;
+}
+function allOwners(){ const set = new Set(); for (const k in (S.zones||{})) { const o = S.zones[k]||{}; if (o.primary) set.add(o.primary); (o.backups||[]).forEach(b=>b&&set.add(b)); } return [...set].sort(); }
+function allPeople(){
+  const ppl = (S.config.people||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const fromHist = Object.values(S.counts).flatMap(c=>c.counters||[]);
+  return [...new Set([...ppl, ...fromHist, ...allOwners()])].sort();
+}
+const AV_COL = ["#6366f1","#0ea5e9","#14b8a6","#f59e0b","#ec4899","#8b5cf6","#ef4444","#22c55e","#06b6d4","#f97316"];
+function avatar(name){ let h=0; for (const ch of name) h=(h*31+ch.charCodeAt(0))>>>0; const ini = name.replace(/[^A-Za-zก-๙]/g,"").slice(0,2).toUpperCase() || "?"; return `<span class="av" style="background:${AV_COL[h%AV_COL.length]}">${esc(ini)}</span>`; }
+function ownChip(name, role, rm){ return `<span class="own ${role==="primary"?"pri":"bk"}" title="${role==="primary"?"ผู้รับผิดชอบหลัก":"ผู้ช่วย/สำรอง"}">${avatar(name)}${esc(name)}${role==="primary"?" ★":""}${rm?`<button onclick="${rm}" title="เอาออก">×</button>`:""}</span>`; }
+function ownerChips(z, compact){
+  const o = zoneOwners(z);
+  if (!o.primary && !o.backups.length) return `<span class="sub" style="font-size:12px">👤 ยังไม่กำหนดผู้รับผิดชอบ</span>`;
+  const b = compact && o.backups.length>2 ? o.backups.slice(0,2) : o.backups;
+  return (o.primary?ownChip(o.primary,"primary"):"") + b.map(n=>ownChip(n,"backup")).join("") + (b.length<o.backups.length?`<span class="sub">+${o.backups.length-b.length}</span>`:"");
+}
+function fillOwnerSelect(sel){
+  const el = $(sel); if (!el) return; const v = el.value; const own = allOwners();
+  el.innerHTML = `<option value="">👥 ทุกผู้รับผิดชอบ</option>` + own.map(n=>`<option value="${esc(n)}">${esc(n)} (${ownerZones(n).length} โซน)</option>`).join("");
+  el.value = own.includes(v) ? v : "";
+}
+let ownView = "zone";
+function personStats(name, cov){ // cov: coverage() of a period
+  const zs = ownerZones(name); let tot=0, done=0, plan=0;
+  for (const {zone,role} of zs) { const z = cov.zones[zone]; if (!z) continue; tot+=z.tot; done+=z.done; plan+=z.plan; }
+  return { zs, tot, done, plan, left: tot-done-plan, pct: tot? done/tot*100 : 0 };
+}
+function renderOwners(){
+  const zl = zoneList(); const box = $("#ownBox"); if (!box) return;
+  document.querySelectorAll("#ownView button").forEach(b=>b.classList.toggle("on", b.dataset.v===ownView));
+  const info = slocInfo();
+  const slocN = z => Object.values(info).filter(m=>m.zone===z && m.slNow.status==="active").length;
+  if (ownView==="zone") {
+    const missing = zl.filter(z => { const o=zoneOwners(z); return !o.primary; });
+    box.innerHTML = (missing.length?`<div class="banner" style="margin-bottom:10px">ยังไม่มีผู้รับผิดชอบหลัก ${missing.length} โซน: ${missing.map(zoneName).map(esc).join(", ")}</div>`:"") + `<div class="ogrid">` + zl.map(z => {
+      const o = zoneOwners(z);
+      return `<div class="ocard ${o.primary?"":"empty"}" style="--zc:${zoneColor(z)}" onclick="openZoneOwnerModal('${esc(z)}')" title="คลิกเพื่อแก้ไข">
+        <div class="h"><span class="zb">${z===OTHER?"อื่น":esc(z)}</span><b>${esc(zoneName(z))}</b><span class="sub" style="margin-left:auto">${slocN(z)} Sloc</span></div>
+        <div class="owners" style="margin:0">${ownerChips(z)}</div></div>`;
+    }).join("") + `</div>`;
+  } else {
+    const c = currentQ(); const r = qRange(c.fy, c.q); const cov = coverage(r.from, r.to);
+    const ppl = allOwners();
+    box.innerHTML = ppl.length ? `<div class="tw" style="max-height:none"><table class="t"><tr><th>ผู้รับผิดชอบ</th><th>โซนที่ดูแล (★ = หลัก)</th><th class="n">Sloc ที่ต้องนับ</th><th>นับครบ Q${c.q} (${qLabel(c.fy,c.q)})</th><th></th></tr>` + ppl.map(n => {
+      const st = personStats(n, cov);
+      return `<tr><td><span class="own pri" style="background:none;padding-left:0">${avatar(n)}${esc(n)}</span></td>
+        <td>${st.zs.map(x=>`<span class="st" style="background:${zoneColor(x.zone)}1f;color:${zoneColor(x.zone)};margin:1px">${esc(zoneName(x.zone))}${x.role==="primary"?" ★":""}</span>`).join(" ")}</td>
+        <td class="n">${st.tot}</td>
+        <td><div class="row" style="gap:8px;flex-wrap:nowrap"><div class="pbar" style="flex:1"><span style="width:${st.pct}%"></span></div><b style="color:${pctColor(st.pct)};min-width:40px;text-align:right">${Math.round(st.pct)}%</b><span class="sub" style="white-space:nowrap">${st.done}/${st.tot}</span></div></td>
+        <td><button class="btn sm" onclick="openPersonModal('${esc(n)}')">แก้ไข</button></td></tr>`;
+    }).join("") + `</table></div>` : `<div class="empty">ยังไม่ได้กำหนดผู้รับผิดชอบ — กด “+ กำหนดโซนให้คน” หรือสลับไปมุมมองตามโซน</div>`;
+  }
+}
+async function saveZoneOwners(z, primary, backups){
+  backups = [...new Set(backups.map(x=>x.trim()).filter(x=>x && x!==primary))];
+  await Store.put("zones", zKey(z), { zone:z, primary:(primary||"").trim(), backups, updatedAt:new Date().toISOString() });
+}
+function openZoneOwnerModal(z){
+  const o = zoneOwners(z); let backups = o.backups.slice();
+  openModal(`
+    <div class="row"><span class="zb" style="width:34px;height:34px;border-radius:10px;background:${zoneColor(z)};color:#fff;display:grid;place-items:center;font-weight:700">${z===OTHER?"อื่น":esc(z)}</span><h2 style="margin:0 0 0 10px">ผู้รับผิดชอบ ${esc(zoneName(z))}</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <label class="f" style="margin-top:14px">ผู้รับผิดชอบหลัก ★<input type="text" id="zoPri" list="ppl" value="${esc(o.primary)}" placeholder="เลือกหรือพิมพ์ชื่อ">${peopleOptions()}</label>
+    <label class="f" style="margin-top:12px">ผู้ช่วย / สำรอง (ได้หลายคน)</label>
+    <div class="taglist" id="zoBk"></div>
+    <div class="sub" style="margin-top:6px">พิมพ์ชื่อแล้วกด Enter เพื่อเพิ่ม · ชื่อในรายการมาจากผู้นับใน MI24 และรายชื่อในหน้าตั้งค่า</div>
+    <div class="banner info" style="margin-top:12px">ผู้รับผิดชอบหลักจะถูกใส่เป็นผู้รับผิดชอบอัตโนมัติเมื่อวางแผนหรือจัดแผนอัตโนมัติในโซนนี้</div>
+    <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="zoSave">บันทึก</button></div>`);
+  const draw = () => {
+    $("#zoBk").innerHTML = backups.map((n,i)=>ownChip(n,"backup",`zoRm(${i})`)).join("") + `<input type="text" id="zoAdd" list="ppl" placeholder="+ เพิ่มชื่อ">`;
+    const inp = $("#zoAdd");
+    const add = () => { const v = inp.value.trim(); if (v && !backups.includes(v)) { backups.push(v); draw(); $("#zoAdd").focus(); } else inp.value=""; };
+    inp.onkeydown = e => { if (e.key==="Enter") { e.preventDefault(); add(); } };
+    inp.onchange = add;
+  };
+  window.zoRm = i => { backups.splice(i,1); draw(); };
+  draw();
+  $("#zoSave").onclick = async () => {
+    const extra = $("#zoAdd").value.trim(); if (extra && !backups.includes(extra)) backups.push(extra);
+    const pri = $("#zoPri").value.trim(); closeModal();
+    try { await saveZoneOwners(z, pri, backups); toast("บันทึกผู้รับผิดชอบ "+zoneName(z)+" แล้ว"); } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
+}
+function openPersonModal(name=""){
+  const zl = zoneList();
+  openModal(`
+    <div class="row"><h2>กำหนดโซนให้ผู้รับผิดชอบ</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <label class="f" style="margin-top:10px">ชื่อ<input type="text" id="pnName" list="ppl" value="${esc(name)}" placeholder="เช่น AMPHA.PH" ${name?"readonly":""}>${peopleOptions()}</label>
+    <div class="row" style="margin-top:12px"><span class="sub">เลือกบทบาทในแต่ละโซน — ถ้าโซนนั้นมีผู้รับผิดชอบหลักอยู่แล้ว การตั้งเป็น “หลัก” จะย้ายคนเดิมไปเป็นสำรอง</span></div>
+    <div class="zpick" id="pnZones"></div>
+    <div class="row" style="margin-top:12px">${name?`<button class="btn danger" id="pnClear">เอาออกจากทุกโซน</button>`:""}<div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="pnSave">บันทึก</button></div>`);
+  let lastName = null; const picked = {};
+  const draw = () => {
+    const n = $("#pnName").value.trim();
+    if (n === lastName) return; lastName = n;
+    $("#pnZones").innerHTML = zl.map(z => {
+      const o = zoneOwners(z); const cur = !n ? "" : o.primary===n ? "primary" : o.backups.includes(n) ? "backup" : "";
+      const role = (z in picked) ? picked[z] : cur;
+      const other = o.primary && o.primary!==n ? `<div class="sub" style="font-size:11px">หลัก: ${esc(o.primary)}</div>` : "";
+      return `<div class="zr ${role?"on":""}" style="--zc:${zoneColor(z)}"><div><b>${esc(zoneName(z))}</b>${other}</div>
+        <select data-z="${esc(z)}"><option value="" ${!role?"selected":""}>–</option><option value="primary" ${role==="primary"?"selected":""}>★ หลัก</option><option value="backup" ${role==="backup"?"selected":""}>สำรอง</option></select></div>`;
+    }).join("");
+    $("#pnZones").querySelectorAll("select").forEach(sel=>sel.onchange=()=>{ picked[sel.dataset.z] = sel.value; sel.closest(".zr").classList.toggle("on", !!sel.value); });
+  };
+  $("#pnName").onchange = draw; $("#pnName").oninput = () => { if (allPeople().includes($("#pnName").value.trim())) draw(); }; draw();
+  const apply = async (clearAll) => {
+    const n = $("#pnName").value.trim(); if (!n) return toast("กรุณาใส่ชื่อ");
+    const sels = [...$("#pnZones").querySelectorAll("select")];
+    closeModal(); let changed = 0;
+    try {
+      for (const sel of sels) {
+        const z = sel.dataset.z, want = clearAll ? "" : sel.value; const o = zoneOwners(z);
+        const cur = o.primary===n ? "primary" : o.backups.includes(n) ? "backup" : "";
+        if (cur===want) continue;
+        let pri = o.primary, bk = o.backups.filter(x=>x!==n);
+        if (cur==="primary") pri = "";
+        if (want==="primary") { if (pri && pri!==n) bk.unshift(pri); pri = n; }
+        if (want==="backup") bk.push(n);
+        await saveZoneOwners(z, pri, bk); changed++;
+      }
+      toast(changed ? `อัปเดต ${changed} โซนแล้ว` : "ไม่มีการเปลี่ยนแปลง");
+    } catch(e){ toast("บันทึกไม่สำเร็จ"); }
+  };
+  $("#pnSave").onclick = () => apply(false);
+  if (name) { let armed=false; $("#pnClear").onclick = () => { if(!armed){ armed=true; $("#pnClear").textContent="กดอีกครั้งเพื่อยืนยัน"; return; } apply(true); }; }
+}
+
 /* ================= Sloc management ================= */
 const slSel = new Set();
 const slSelected = () => [...slSel];
 function renderSlocs(){
+  renderOwners();
   const info = slocInfo(); const today = todayStr();
   const list = Object.values(info);
   const cnt = st => list.filter(m=>m.slNow.status===st).length;
@@ -1288,6 +1463,17 @@ function renderQuarter(){
     + zl.map(z => `<tr><td class="zn" style="--zc:${zoneColor(z)}"><i></i>${esc(zoneName(z))}<div class="sub" style="font-weight:400;padding-left:16px">${(covs[fq-1].zones[z]||{}).tot||0} Sloc</div></td>${covs.map((c,i)=>cell(c,z,i+1)).join("")}${yCell(z)}</tr>`).join("")
     + `<tr class="tot"><td class="zn">รวมทุกโซน</td>${covs.map((c,i)=>cell(c,"__all",i+1)).join("")}${yCell("__all")}</tr>`;
 
+  // ---- per person ----
+  { const ppl = allOwners(); const CQ = covs[fq-1];
+    $("#qPplTitle").textContent = `สรุปตามผู้รับผิดชอบ — Q${fq} (${qLabel(qYear,fq)})`;
+    $("#qPpl").innerHTML = ppl.length ? `<tr><th>ผู้รับผิดชอบ</th><th>โซน (★ = หลัก)</th><th class="n">ต้องนับ</th><th class="n">นับครบ</th><th class="n">มีแผน</th><th class="n">ค้าง</th><th style="min-width:220px">ความคืบหน้า</th></tr>` + ppl.map(n => {
+      const st = personStats(n, CQ);
+      return `<tr><td><span class="own pri" style="background:none;padding-left:0">${avatar(n)}${esc(n)}</span></td>
+        <td>${st.zs.map(x=>`<a href="#quarter" onclick="qPick(${fq},'${esc(x.zone)}');return false" class="st" style="background:${zoneColor(x.zone)}1f;color:${zoneColor(x.zone)};margin:1px;text-decoration:none">${esc(zoneName(x.zone))}${x.role==="primary"?" ★":""}</a>`).join(" ")}</td>
+        <td class="n">${st.tot}</td><td class="n" style="color:var(--done)">${st.done}</td><td class="n" style="color:var(--plan)">${st.plan||""}</td><td class="n" style="color:${st.left>0?"var(--late)":"inherit"}">${CQ.future||CQ.noData?"–":st.left}</td>
+        <td><div class="row" style="gap:8px;flex-wrap:nowrap"><div class="pbar" style="flex:1"><span style="width:${st.pct}%"></span></div><b style="color:${pctColor(st.pct)};min-width:40px;text-align:right">${CQ.noData?"–":Math.round(st.pct)+"%"}</b></div></td></tr>`;
+    }).join("") : `<tr><td class="empty">ยังไม่ได้กำหนดผู้รับผิดชอบโซน — ไปที่แท็บ “จัดการ Sloc”</td></tr>`;
+  }
   // ---- matrix ----
   const zf = $("#qZone").value; const show = $("#qShow").value;
   $("#qMxTitle").textContent = `รายละเอียด Sloc × ไตรมาส${zf?" — "+zoneName(zf):""}`;
@@ -1425,13 +1611,14 @@ function exportHistory(){
 /* ================= wiring ================= */
 document.querySelectorAll("#pQuick button").forEach(b=>b.onclick=()=>setQuick(b.dataset.q));
 ["#pFrom","#pTo"].forEach(s=>$(s).onchange=()=>{ document.querySelectorAll("#pQuick button").forEach(x=>x.classList.remove("on")); renderAll(); });
-$("#ovSearch").oninput = renderOverview; $("#ovShowOff").onchange = renderOverview;
+$("#ovSearch").oninput = renderOverview; $("#ovOwner").onchange = renderOverview; $("#ovShowOff").onchange = renderOverview;
 document.querySelectorAll("#qBasis button").forEach(b=>b.onclick=()=>{ qBasis=b.dataset.b; renderQuarter(); });
 $("#qPrev").onclick=()=>{ qYear--; qSel={q:1,z:qSel?qSel.z:""}; renderQuarter(); };
 $("#qNext").onclick=()=>{ qYear++; qSel={q:1,z:qSel?qSel.z:""}; renderQuarter(); };
 $("#qZone").onchange=()=>{ qSel = Object.assign({}, qSel, {z:$("#qZone").value}); renderQuarter(); };
 $("#qShow").onchange=renderQuarter;
-["#slZone","#slStatus"].forEach(x=>$(x).onchange=renderSlocs); $("#slSearch").oninput=renderSlocs;
+["#slZone","#slStatus"].forEach(x=>$(x).onchange=renderSlocs);
+document.querySelectorAll("#ownView button").forEach(b=>b.onclick=()=>{ ownView=b.dataset.v; renderOwners(); }); $("#slSearch").oninput=renderSlocs;
 $("#calPrev").onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1); calDay=null; renderPlan(); };
 $("#calNext").onclick=()=>{ calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1); calDay=null; renderPlan(); };
 $("#calToday").onclick=()=>{ const d=new Date(); calMonth=new Date(d.getFullYear(),d.getMonth(),1); calDay=null; renderPlan(); };
