@@ -71,10 +71,11 @@ label.f > *{color:var(--ink)}
 .zone .zh{display:flex;align-items:center;gap:10px}
 .ztog{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:18px;font-weight:600;line-height:1;color:var(--muted);flex:none;display:grid;place-items:center;transition:all .15s}
 .ztog:hover{border-color:var(--zc);color:var(--zc);background:color-mix(in srgb,var(--zc) 8%,#fff)}
-.zone.collapsed .chips{display:none}
-.zone .zsum{display:none;font-size:12.5px;color:var(--muted);cursor:pointer}
-.zone.collapsed .zsum{display:flex;gap:10px;flex-wrap:wrap}
-.zone .zsum b{font-weight:600}
+.zone .chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.zone .chip{min-width:0}
+.zone .chip small{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zmore{border:1px dashed var(--zc,#94a3b8);background:#fff;color:var(--zc,#475569);border-radius:10px;padding:5px 10px;cursor:pointer;font-weight:600;font-size:12.5px;text-align:center}
+.zmore:hover{background:color-mix(in srgb,var(--zc) 8%,#fff)}
 .zone .zl{width:38px;height:38px;border-radius:11px;background:var(--zc,#6366f1);color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px;flex:none;box-shadow:0 4px 10px color-mix(in srgb,var(--zc,#6366f1) 35%,transparent)}
 .zone .zl.other{font-size:12px}
 .zone .zt{flex:1;min-width:0}
@@ -274,7 +275,7 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
       <select id="ovOwner" title="ดูเฉพาะโซนของผู้รับผิดชอบ" style="max-width:240px"><option value="">👥 ทุกผู้รับผิดชอบ</option></select>
       <label class="sub" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ovShowOff"> แสดง Sloc ที่พักใช้/ยกเลิก</label>
       <div class="spacer"></div>
-      <div class="seg"><button onclick="setAllZones(false)" title="ย่อทุกโซน">⊖ ย่อทั้งหมด</button><button onclick="setAllZones(true)" title="ขยายทุกโซน">⊕ ขยายทั้งหมด</button></div>
+      <div class="seg"><button onclick="setAllZones(false)" title="ทุกโซนแสดง 16 Sloc">⊖ ย่อทั้งหมด</button><button onclick="setAllZones(true)" title="แสดงทุก Sloc ทุกโซน">⊕ ขยายทั้งหมด</button></div>
       <input type="text" id="ovSearch" placeholder="ค้นหา Sloc…" style="width:150px">
       <button class="btn pri" onclick="openPlanModal()">+ วางแผนนับ</button>
     </div>
@@ -719,36 +720,33 @@ function renderOverview(){
     const tot = (byZone[z]||[]).length;
     const c = s => (byZone[z]||[]).filter(m=>m.status===s).length;
     const seg = (s,col) => tot ? `<span style="width:${c(s)/tot*100}%;background:${col}"></span>` : "";
-    const chips = ms.length ? ms.map(m => {
-      const age = m.off ? SL_ST[m.sl.status] : m.age===null ? "ยังไม่เคยนับ" : (m.age===0?"วันนี้":m.age+" วันก่อน");
+    const LIMIT = 16;
+    const expanded = !!q || isExpanded(z);
+    const shown = expanded ? ms : ms.slice(0, LIMIT);
+    const hiddenN = ms.length - shown.length;
+    const chips = ms.length ? shown.map(m => {
+      const age = m.off ? SL_ST[m.sl.status] : m.age===null ? "ไม่เคยนับ" : (m.age===0?"วันนี้":m.age+" วัน");
       const extra = m.status==="planned"||m.status==="late" ? (m.plansInP[0] ? " · แผน "+fmtD(m.plansInP[0].date) : "") : "";
       return `<div class="chip ${m.status}" onclick="openDrawer('${esc(m.code)}')" title="${esc(m.desc)}"><span class="c">${esc(m.code)}</span><small>${age}${extra}</small></div>`;
     }).join("") : `<span class="sub">ยังไม่มี Sloc — เพิ่มได้ที่หน้า “นำเข้า / ตั้งค่า”</span>`;
-    const col = !q && isCollapsed(z);
-    const cnt2 = s => ms.filter(m=>m.status===s).length;
-    return `<div class="zone ${col?"collapsed":""}" style="--zc:${zoneColor(z)}">
+    return `<div class="zone" style="--zc:${zoneColor(z)}">
       <div class="zh"><div class="zl ${z.length>1||z===OTHER?"other":""}">${z===OTHER?"อื่น":z}</div>
         <div class="zt"><b>${zoneName(z)}</b> <b class="zpct" style="float:right;color:${pctColor(tot?c("done")/tot*100:0)}">${tot?Math.round(c("done")/tot*100)+"%":"–"}</b><div class="sub">${tot} Sloc · นับครบ ${c("done")} · มีแผน ${c("planned")+c("late")} · เหลือ ${c("none")}${(offZone[z]||[]).length?` · <span style="color:var(--off)">ไม่นับ ${(offZone[z]||[]).length}</span>`:""}</div>
         <div class="owners">${ownerChips(z, true)}</div></div>
         <button class="btn sm" onclick="openPlanModal({zone:'${esc(z)}'})">+ แผน</button>
-        <button class="ztog" onclick="toggleZone('${esc(z)}')" title="${col?"ขยายดูรายการ Sloc":"ย่อรายการ Sloc"}">${col?"+":"−"}</button></div>
+        ${ms.length > LIMIT && !q ? `<button class="ztog" onclick="toggleZone('${esc(z)}')" title="${expanded?"ย่อเหลือ "+LIMIT+" Sloc":"แสดงทั้งหมด "+ms.length+" Sloc"}">${expanded?"−":"+"}</button>` : ""}</div>
       <div class="bar">${seg("done","var(--done)")}${seg("partial","var(--partial)")}${seg("planned","var(--plan)")}${seg("late","var(--late)")}</div>
-      <div class="zsum" onclick="toggleZone('${esc(z)}')">${ms.length} Sloc ถูกย่อไว้ ·
-        ${cnt2("done")?`<span style="color:var(--done)">● นับครบ <b>${cnt2("done")}</b></span>`:""}
-        ${cnt2("planned")+cnt2("late")?`<span style="color:var(--plan)">● มีแผน <b>${cnt2("planned")+cnt2("late")}</b></span>`:""}
-        ${cnt2("partial")?`<span style="color:var(--partial)">● ไม่ครบ <b>${cnt2("partial")}</b></span>`:""}
-        ${cnt2("none")?`<span>● ยังไม่นับ <b>${cnt2("none")}</b></span>`:""}
-        <span style="color:var(--accent)">กด + เพื่อดู</span></div>
-      <div class="chips">${chips}</div></div>`;
+      <div class="chips">${chips}</div>
+      ${hiddenN ? `<div class="zmore" onclick="toggleZone('${esc(z)}')">+ ดูเพิ่มอีก ${hiddenN} Sloc</div>` : (expanded && ms.length > LIMIT && !q ? `<div class="zmore" onclick="toggleZone('${esc(z)}')">− ย่อเหลือ ${LIMIT} Sloc</div>` : "")}</div>`;
   }).join("");
 }
-/* ย่อ/ขยายการ์ดโซน (จำไว้ในเครื่องนี้) */
-const ZC_KEY = "stockcount.collapsed";
-let zCollapsed = (()=>{ try { return new Set(JSON.parse(localStorage.getItem(ZC_KEY)||"[]")); } catch(e){ return new Set(); } })();
-const isCollapsed = z => zCollapsed.has(z);
-function saveCollapsed(){ try { localStorage.setItem(ZC_KEY, JSON.stringify([...zCollapsed])); } catch(e){} }
-function toggleZone(z){ zCollapsed.has(z) ? zCollapsed.delete(z) : zCollapsed.add(z); saveCollapsed(); renderOverview(); }
-function setAllZones(open){ zCollapsed = open ? new Set() : new Set(zoneList()); saveCollapsed(); renderOverview(); }
+/* การ์ดโซนแสดง 16 Sloc แรก กด + เพื่อดูทั้งหมด (จำไว้ในเครื่องนี้) */
+const ZX_KEY = "stockcount.expanded";
+let zExpanded = (()=>{ try { return new Set(JSON.parse(localStorage.getItem(ZX_KEY)||"[]")); } catch(e){ return new Set(); } })();
+const isExpanded = z => zExpanded.has(z);
+function saveExpanded(){ try { localStorage.setItem(ZX_KEY, JSON.stringify([...zExpanded])); } catch(e){} }
+function toggleZone(z){ zExpanded.has(z) ? zExpanded.delete(z) : zExpanded.add(z); saveExpanded(); renderOverview(); }
+function setAllZones(open){ zExpanded = open ? new Set(zoneList()) : new Set(); saveExpanded(); renderOverview(); }
 function setQuick(q){
   const d = new Date(); let a,b;
   if (q==="month"){ a=new Date(d.getFullYear(),d.getMonth(),1); b=new Date(d.getFullYear(),d.getMonth()+1,0); }
