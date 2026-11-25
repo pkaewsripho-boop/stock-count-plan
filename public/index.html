@@ -91,6 +91,10 @@ label.f > *{color:var(--ink)}
 .st.partial,.st.inprogress,.st.paused{background:var(--partial-bg);color:var(--partial)}.st.late{background:var(--late-bg);color:var(--late)}
 .st.none,.st.cancelled{background:var(--none-bg);color:var(--none)}
 .st.retired,.st.off{background:#e2e8f0;color:#475569}
+.st.new{background:#ede9fe;color:#6d28d9}
+.bulkprev{display:flex;flex-wrap:wrap;gap:5px;max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px}
+.bulkprev span{font-family:"IBM Plex Mono",monospace;font-size:12px;border-radius:6px;padding:1px 7px;background:var(--done-bg);color:var(--done)}
+.bulkprev span.dup{background:#f1f5f9;color:#94a3b8;text-decoration:line-through}
 table.t{width:100%;border-collapse:collapse;font-size:13px}
 table.t th{text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);padding:8px 10px;white-space:nowrap;background:#f8fafc;position:sticky;top:0;z-index:1}
 table.t td{border-bottom:1px solid var(--soft);padding:7px 10px;vertical-align:top}
@@ -393,6 +397,7 @@ a.mono{font-weight:500;text-decoration:none;border-bottom:1px dotted var(--accen
         <select id="newSlocZone"></select>
         <input type="text" id="newSlocDesc" placeholder="คำอธิบาย" style="width:160px">
         <button class="btn sm" onclick="addSloc()">+ เพิ่ม Sloc</button>
+        <button class="btn sm pri" onclick="openBulkSlocModal()">+ เพิ่มหลายรายการ</button>
       </div>
       <div class="tw" style="max-height:640px"><table class="t" id="slocTable"></table></div>
       <div class="bulkbar hide" id="slBulk"><span id="slBulkN"></span><div class="spacer"></div>
@@ -455,7 +460,7 @@ const zoneIdx = z => { const i = GROUPS.indexOf(z); return i<0 ? 99 : i; };
 const ZCOL = {A:"#6366f1",B:"#0ea5e9",C:"#14b8a6",D:"#22c55e",E:"#84cc16",F:"#f59e0b",G:"#f97316",H:"#ef4444",I:"#ec4899",J:"#a855f7",K:"#8b5cf6",L:"#06b6d4",R:"#e11d48",S:"#0891b2",M:"#65a30d",P:"#d97706",SP:"#475569"};
 const zoneColor = z => ZCOL[z] || "#64748b";
 /* ---- Sloc status: active / paused / retired, with effective dates & history ---- */
-const SL_ST = {active:"ใช้งาน", paused:"พักใช้ชั่วคราว", retired:"ยกเลิกใช้"};
+const SL_ST = {active:"ใช้งาน", paused:"พักใช้ชั่วคราว", retired:"ยกเลิกใช้", new:"ยังไม่เริ่มใช้"};
 const SL_REASONS = ["ย้าย/รวมพื้นที่จัดเก็บ","รวมกับ Sloc อื่น","ไม่มีสต็อกแล้ว","ปิดปรับปรุงพื้นที่","เปลี่ยนรหัส Sloc ใหม่","อื่นๆ"];
 function slocHistory(code){
   const o = S.slocs[code]; if (!o) return [];
@@ -465,6 +470,8 @@ function slocHistory(code){
 }
 // สถานะของ Sloc ณ วันที่ date (YYYY-MM-DD)
 function statusOn(code, date){
+  const so = S.slocs[code];
+  if (so && so.activeFrom && date < so.activeFrom) return {status:"new", since:so.activeFrom, reason:"เริ่มใช้งาน "+fmtD(so.activeFrom)};
   let cur = {status:"active"};
   for (const e of slocHistory(code)) if ((e.since||"") <= date) cur = e;
   if (cur.status==="paused" && cur.until && cur.until < date) return {status:"active", ended:cur};
@@ -1267,7 +1274,7 @@ function renderSlocs(){
   const info = slocInfo(); const today = todayStr();
   const list = Object.values(info);
   const cnt = st => list.filter(m=>m.slNow.status===st).length;
-  const stale = list.filter(m=>m.slNow.status==="active" && (m.age===null || m.age>180));
+  const stale = list.filter(m=>{ if (m.slNow.status!=="active") return false; if (m.age!==null) return m.age>180; const af=(S.slocs[m.code]||{}).activeFrom; return !af || daysBetween(af, today) > 180; });
   $("#slKpis").innerHTML = `
     <div class="kpi acc"><b>${list.length}</b><span>Sloc ทั้งหมดในระบบ</span></div>
     <div class="kpi done"><b>${cnt("active")}</b><span>ใช้งาน (ต้องนับ)</span></div>
@@ -1361,6 +1368,52 @@ async function addSloc(){
   const auto = autoZone(c); const z = $("#newSlocZone").value;
   await saveSloc(c, { zone: z===auto ? "" : z, desc:$("#newSlocDesc").value.trim() });
   $("#newSloc").value=""; $("#newSlocDesc").value="";
+}
+/* เพิ่ม Sloc หลายรายการ: รองรับช่วง เช่น EG00-EG55 และรายการคั่นด้วย , หรือขึ้นบรรทัดใหม่ */
+function expandSlocs(text){
+  const out = [], bad = [];
+  for (const tok of String(text||"").toUpperCase().split(/[\s,;]+/).filter(Boolean)) {
+    const m = /^([A-Z]*)(\d+)-([A-Z]*)(\d+)$/.exec(tok);
+    if (m) {
+      const p1=m[1], p2=m[3]||m[1], a=m[2], b=m[4];
+      if (p1!==p2 || a.length!==b.length || +b < +a || (+b - +a) > 999) { bad.push(tok); continue; }
+      for (let i=+a;i<=+b;i++) out.push(p1+String(i).padStart(a.length,"0"));
+    } else if (/^[A-Z0-9]{2,8}$/.test(tok)) out.push(tok);
+    else bad.push(tok);
+  }
+  return { codes:[...new Set(out)].filter(c=>/^[A-Z0-9]{2,8}$/.test(c)), bad };
+}
+function openBulkSlocModal(){
+  openModal(`
+    <div class="row"><h2>เพิ่ม Sloc หลายรายการ</h2><div class="spacer"></div><button class="x" onclick="closeModal()">×</button></div>
+    <label class="f" style="margin-top:10px"><span>รหัส Sloc — ใส่เป็นช่วง เช่น <b>EG00-EG55</b> หรือหลายรายการคั่นด้วย , หรือขึ้นบรรทัดใหม่</span>
+      <textarea id="bkText" placeholder="EG00-EG55">EG00-EG55</textarea></label>
+    <div class="fgrid">
+      <label class="f">โซน<select id="bkZone"><option value="">อัตโนมัติจากรหัส</option>${[...GROUPS,OTHER].map(z=>`<option value="${esc(z)}">${zoneName(z)}</option>`).join("")}</select></label>
+      <label class="f">เริ่มใช้งาน (ต้องนับ) ตั้งแต่<input type="date" id="bkFrom" value="${todayStr()}"></label>
+      <label class="f">คำอธิบาย (ไม่บังคับ)<input type="text" id="bkDesc" placeholder="เช่น ชั้นวาง G แถวใหม่"></label>
+    </div>
+    <div class="sub" id="bkSum"></div>
+    <div class="bulkprev" id="bkPrev"></div>
+    <div class="banner info" style="margin-top:12px">ก่อนวันเริ่มใช้งาน Sloc จะไม่ถูกนับเป็นเป้าหมายใน % — ไตรมาสที่ผ่านมาจึงไม่ลดลง · ถ้าไม่ต้องนับในไตรมาสนี้ ให้ตั้งเป็นวันแรกของไตรมาสหน้า</div>
+    <div class="row" style="margin-top:12px"><div class="spacer"></div><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn pri" id="bkSave" disabled>เพิ่ม</button></div>`);
+  let codes = [];
+  const known = new Set(allSlocCodes());
+  const upd = () => {
+    const r = expandSlocs($("#bkText").value); codes = r.codes.filter(c=>!known.has(c));
+    const dup = r.codes.filter(c=>known.has(c));
+    const z = $("#bkZone").value; const zs = [...new Set(codes.map(c=> z || autoZone(c)))];
+    $("#bkSum").innerHTML = `จะเพิ่ม <b>${codes.length}</b> Sloc${codes.length?` → ${zs.map(zoneName).map(esc).join(", ")}`:""}${dup.length?` · มีอยู่แล้ว ${dup.length} (ข้าม)`:""}${r.bad.length?` · <span style="color:var(--late)">รูปแบบไม่ถูกต้อง: ${r.bad.map(esc).join(", ")}</span>`:""}`;
+    $("#bkPrev").innerHTML = r.codes.map(c=>`<span class="${known.has(c)?"dup":""}">${esc(c)}</span>`).join("") || `<span class="sub" style="background:none">–</span>`;
+    $("#bkSave").disabled = !codes.length; $("#bkSave").textContent = codes.length ? `เพิ่ม ${codes.length} Sloc` : "เพิ่ม";
+  };
+  $("#bkText").oninput = upd; $("#bkZone").onchange = upd; upd();
+  $("#bkSave").onclick = async () => {
+    const z = $("#bkZone").value, from = $("#bkFrom").value, desc = $("#bkDesc").value.trim();
+    const entries = codes.map(c => [c, { code:c, zone: (z && z!==autoZone(c)) ? z : "", desc, activeFrom: from||"", createdAt:new Date().toISOString() }]);
+    closeModal();
+    try { await Store.putMany("slocs", entries); toast(`เพิ่ม ${entries.length} Sloc แล้ว`); } catch(e){ toast("เพิ่มไม่สำเร็จ"); }
+  };
 }
 async function saveConfig(){
   await Store.putConfig({ cycleDays:Math.max(1,num($("#cfgCycle").value)), capacity:Math.max(10,num($("#cfgCap").value)), people:$("#cfgPeople").value.trim(), fyStart:Number($("#cfgFy").value)||1 });
